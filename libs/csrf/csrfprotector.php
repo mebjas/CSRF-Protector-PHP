@@ -43,7 +43,7 @@ class csrfProtector
 	/**
 	 * function to initialise the csrfProtector work flow
 	 */
-	public static function initialise($logging = null, $action = null)
+	public static function init($logging = null, $action = null)
 	{
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
@@ -85,7 +85,7 @@ class csrfProtector
 				)) {
 
 				if(self::$config['isLoggingEnabled']) {
-					if (!file_exists(__DIR__ .self::$config['isLoggingEnabled'])) {
+					if (!file_exists(__DIR__ .self::$config['logDirectory'])) {
 						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 					}
 				}
@@ -93,20 +93,26 @@ class csrfProtector
 				//#todo: ask mentors if $failedAuthAction is better as an int or string
 				//default case is case 0
 				switch (self::$config['failedAuthAction']) {
+					case 0:
+					unset($_POST);
+					break;
 					case 1:
-						//show 404
-						header("HTTP/1.0 404 Not Found");
-						exit("<h2>404 Not Found!</h2>");
+					//show 404
+					header("HTTP/1.0 404 Not Found");
+					exit("<h2>404 Not Found!</h2>");
+					break;
 					case 2:
-						//show 403
-						header('HTTP/1.0 403 Forbidden');
-						exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
+					//show 403
+					header('HTTP/1.0 403 Forbidden');
+					exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
+					break;
 					case 3:
-						//custom error message
-						exit(self::$config['customErrorMessage']);
+					//custom error message
+					exit(self::$config['customErrorMessage']);
+					break;
 					default:
-						unset($_POST);
-						break;
+					unset($_POST);
+					break;
 				}					
 			}
 		} 
@@ -210,4 +216,3 @@ class csrfProtector
 	    return $buffer;
 	}
 };
-
