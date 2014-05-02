@@ -1,5 +1,10 @@
 <?php
 
+define("CSRFP_POST","CSRFPROTECTOR_AUTH_TOKEN");
+
+/**
+ * child exception classes
+ */
 class configFileNotFoundException extends \exception {};
 class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
@@ -9,39 +14,46 @@ class csrfProtector
 	/**
 	 * Name of the token sent to client as cookie and
 	 * sent from client as post
-	 * NOTE: DO NOT CHANGE THIS
+	 * @var string
 	 */
-	public static $tokenName = 'CSRF_AUTH_TOKEN';
+	public static $tokenName = 'CSRF_AUTH_TOKEN';	//NOTE: DO NOT CHANGE THIS
 
 	/**
 	 * expiry time for cookie
+	 * @var int
 	 */
 	public static $cookieExpiryTime = 300;	//5 minutes
 
 	/**
 	 * flag for cross origin/same origin request
+	 * @var bool
 	 */
-	public static $isSameOrigin = true;	//5 minutes
+	private static $isSameOrigin = true;
 
 	/**
 	 * flag to check if output file is a valid HTML or not
+	 * @var bool
 	 */
 	private static $isValidHTML = false;
 
 	/**
 	 * config file for CSRFProtector
-	 * #Array, length = 4
+	 * @var int Array, length = 5
 	 * @property #1: isLoggingEnabled (bool) => true if logging is allowed, false otherwise
 	 * @property #2: failedAuthAction (int) => action to be taken in case autherisation fails
 	 * @property #3: logDirectory (string) => directory in which log will be saved
 	 * @property #4: customErrorMessage (string) => custom error message to be sent in case
-	 *												of failed authentication
+	 *						of failed authentication
 	 * @property #5: jsFile (string) => location of the CSRFProtector js file
 	 */
-	private static $config = array();
+	public static $config = array();
 
 	/**
 	 * function to initialise the csrfProtector work flow
+	 * @parameters: variables to override default configuration loaded from file
+	 * @param $logging - bool, true to enable logging and false to disable
+	 * @param $action - int, for different actions to be taken in case of failed validation
+	 * 			
 	 */
 	public static function init($logging = null, $action = null)
 	{
@@ -54,65 +66,68 @@ class csrfProtector
 
 		//loading logging property
 		if ($logging !== null) {
-			self::$config['isLoggingEnabled'] = $logging;
+			self::$config['isLoggingEnabled'] = (bool) $logging;
 		}
 		
 		//action that is needed to be taken in case of failed authorisation
 		if ($action !== null) {
-			self::$config['failedAuthAction'] = $action;
+			self::$config['failedAuthAction'] = intval($action);
 		}	
 
 		//authorise the incoming request
 		self::authorisePost();
 
-		// Initialize our handler
+		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
 	}
 
 	/**
 	 * function to authorise incoming post requests
+	 * @param: void
 	 */
-	public static function authorisePost($logging = true, $action = 0)
+	public static function authorisePost()
 	{
-		//#todo this method is valid for same origin request only
+		//#todo this method is valid for same origin request only, 
+		//enable it for cross origin also sometime
 		//for cross origin the functionality is different
 		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 			//currently for same origin only
-			if (!(isset($_POST['CSRFPROTECTOR_AUTH_TOKEN']) 
+			if (!(isset($_POST[CSRFP_POST]) 
 				&& isset($_COOKIE[self::$tokenName])
-				&& ($_POST['CSRFPROTECTOR_AUTH_TOKEN'] === $_COOKIE[self::$tokenName])
+				&& ($_POST[CSRFP_POST] === $_COOKIE[self::$tokenName])
 				)) {
 
 				if(self::$config['isLoggingEnabled']) {
 					if (!file_exists(__DIR__ .self::$config['logDirectory'])) {
 						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 					}
+					//logging code here
 				}
 
 				//#todo: ask mentors if $failedAuthAction is better as an int or string
 				//default case is case 0
 				switch (self::$config['failedAuthAction']) {
 					case 0:
-					unset($_POST);
-					break;
+						unset($_POST);
+						break;
 					case 1:
-					//show 404
-					header("HTTP/1.0 404 Not Found");
-					exit("<h2>404 Not Found!</h2>");
-					break;
+						//show 404
+						header("HTTP/1.0 404 Not Found");
+						exit("<h2>404 Not Found!</h2>");
+						break;
 					case 2:
-					//show 403
-					header('HTTP/1.0 403 Forbidden');
-					exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
-					break;
+						//show 403
+						header('HTTP/1.0 403 Forbidden');
+						exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
+						break;
 					case 3:
-					//custom error message
-					exit(self::$config['customErrorMessage']);
-					break;
+						//custom error message
+						exit(self::$config['customErrorMessage']);
+						break;
 					default:
-					unset($_POST);
-					break;
+						unset($_POST);
+						break;
 				}					
 			}
 		} 
@@ -205,6 +220,7 @@ class csrfProtector
 	        return $buffer;
 	    }
 	    */
+	    
 	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'"></script>';	
 
 	    //implant the CSRFGuard js file to outgoing script
