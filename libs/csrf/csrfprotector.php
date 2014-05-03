@@ -1,5 +1,6 @@
 <?php
 
+//name of HTTP POST variable for authentication
 define("CSRFP_POST","CSRFPROTECTOR_AUTH_TOKEN");
 
 /**
@@ -53,7 +54,8 @@ class csrfProtector
 	 * @parameters: variables to override default configuration loaded from file
 	 * @param $logging - bool, true to enable logging and false to disable
 	 * @param $action - int, for different actions to be taken in case of failed validation
-	 * 			
+	 * @return void
+	 * @throw configFileNotFoundException			
 	 */
 	public static function init($logging = null, $action = null)
 	{
@@ -83,7 +85,9 @@ class csrfProtector
 
 	/**
 	 * function to authorise incoming post requests
-	 * @param: void
+	 * @param void
+	 * @return void
+	 * @throw logDirectoryNotFoundException
 	 */
 	public static function authorisePost()
 	{
@@ -141,7 +145,8 @@ class csrfProtector
 
 	/**
 	 * function to refresh cookie sent to browser
-	 * @param: void
+	 * @param void
+	 * @return void
 	 */
 	public static function refreshCookie()
 	{
@@ -158,6 +163,7 @@ class csrfProtector
 	/**
 	 * function to set auth cookie 
 	 * @param: void
+	 * @return void
 	 */
 	public static function createCookie()
 	{
@@ -170,6 +176,7 @@ class csrfProtector
 	 * function to generate random hash of length as given in parameter
 	 * max length = 128
 	 * @param: length to hash required, int
+	 * @return string
 	 */
 	public static function generateAuthToken($length = 64)
 	{
@@ -197,6 +204,7 @@ class csrfProtector
 	 * inject our JavaScript library.
 	 * @param: $buffer, output buffer to which all output are stored
 	 * @param: flag
+	 * @return string, complete output buffer
 	 */
 	public static function ob_handler($buffer, $flags)
 	{
