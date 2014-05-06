@@ -103,7 +103,7 @@ class csrfProtector
 				)) {
 
 				if(self::$config['isLoggingEnabled']) {
-					if (!file_exists(__DIR__ .self::$config['logDirectory'])) {
+					if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
 						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 					}
 					//logging code here
@@ -116,19 +116,23 @@ class csrfProtector
 						unset($_POST);
 						break;
 					case 1:
-						//show 404
+						//send 404 header
 						header("HTTP/1.0 404 Not Found");
 						exit("<h2>404 Not Found!</h2>");
 						break;
 					case 2:
-						//show 403
+						//send 403 header
 						header('HTTP/1.0 403 Forbidden');
 						exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
 						break;
 					case 3:
-						//custom error message
+						//send custom error message
 						exit(self::$config['customErrorMessage']);
 						break;
+					case 4:
+						//redirect to custom error page
+						header("location: self::$config[errorRedirectionPage]");
+						exit;
 					default:
 						unset($_POST);
 						break;

@@ -1,3 +1,12 @@
+/**
+ * This is javascript code for CSRF Protector. 
+ */
+
+
+/**
+ * stores authkey in memory once it has been retreived from cookie
+ * data-type string
+ */
 var authKey = null;
 
 for(var i = 0; i<document.forms.length; i++) {

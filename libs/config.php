@@ -4,8 +4,9 @@
  */
 return array(
 	"isLoggingEnabled" => true,
-	"logDirectory" => "/../../log",
+	"logDirectory" => "../log",
 	"failedAuthAction" => 0,
+	"errorRedirectionPage" => "http://localhost/",
 	"customErrorMessage" => "",
 	"jsFile" => "http://localhost/test/csrf/js/csrfprotector.js"
 );
