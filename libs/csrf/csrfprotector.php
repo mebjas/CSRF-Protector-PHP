@@ -244,6 +244,13 @@ class csrfProtector
 	    }
 	    */
 	    
+	    //add a <noscript> message to outgoing HTML output,
+	    //informing the user to enable js for CSRFProtector to work
+	    //best section to add, after <body> tag
+	    $buffer = preg_replace("/<body(.*)>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
+	    	"</noscript><hr>", $buffer);
+
+
 	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'"></script>';	
 
 	    //implant the CSRFGuard js file to outgoing script
