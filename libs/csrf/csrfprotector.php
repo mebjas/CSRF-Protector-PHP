@@ -9,6 +9,7 @@ define("CSRFP_POST","CSRFPROTECTOR_AUTH_TOKEN");
 class configFileNotFoundException extends \exception {};
 class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
+class logFileWriteError extends \exception {};
 
 class csrfProtector
 {
@@ -108,11 +109,12 @@ class csrfProtector
 				&& ($_POST[CSRFP_POST] === $_COOKIE[self::$tokenName])
 				)) {
 
-				if(self::$config['isLoggingEnabled']) {
+				if (self::$config['isLoggingEnabled']) {
 					if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
 						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 					}
-					//logging code here
+				//call the logging function
+				self::logCSRFattack();
 				}
 
 				//#todo: ask mentors if $failedAuthAction is better as an int or string
@@ -248,7 +250,7 @@ class csrfProtector
 	    //informing the user to enable js for CSRFProtector to work
 	    //best section to add, after <body> tag
 	    $buffer = preg_replace("/<body(.*)>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
-	    	"</noscript><hr>", $buffer);
+	    	"</noscript>", $buffer);
 
 
 	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'"></script>';	
@@ -261,4 +263,45 @@ class csrfProtector
 
 	    return $buffer;
 	}
+
+	/**
+	 * Functio to log CSRF Attack
+	 * @param: void
+	 * @retrun: void
+	 * @throw: logFileWriteError
+	 */
+	private static function logCSRFattack()
+	{
+		//if file doesnot exist for, create it
+		$logFile = fopen(__DIR__ ."/../" .self::$config['logDirectory']
+		."/" .self::getCurrentLogFileName(), "a+");
+		
+		//throw exception if above fopen fails
+		if (!$logFile) {
+			throw new logFileWriteError("Unable to write to the log file");	
+		}
+
+		//miniature version of the log
+		$log = date("d M Y, H:i:s") ." | IP: " .$_SERVER['REMOTE_ADDR'] .PHP_EOL;
+		/*
+		 * #todo, change log style, do log the attempted POST data 
+		 */
+
+		//append log to the file
+		fwrite($logFile, $log);
+
+		//close the file handler
+		fclose($logFile);
+	}
+
+	/**
+	 * function to return filename of log file for current date
+	 * @param: void
+	 * @return: string, filename
+	 */
+	private static function getCurrentLogFileName()
+	{
+		return date("m-20y") .".log";
+	}
+
 };
