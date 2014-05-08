@@ -16,4 +16,5 @@ CSRFProtector configuration
 
 `errorRedirectionPage` `string` `absolute url` of custom error page<br>
 `customErrorMessage` `string` Custom error message to be shown in case `failedAuthAction = 3`<br>
-`jsFile` `string` url of the javascript file `http://yoursite.com/csrfp/js/csrfprotector.js`
+`jsFile` `string` url of the javascript file `http://yoursite.com/csrfp/js/csrfprotector.js`<br>
+`tokenLength` `int` length of CSRFProtector Auth Token

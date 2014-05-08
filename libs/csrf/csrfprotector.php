@@ -52,12 +52,13 @@ class csrfProtector
 	/**
 	 * function to initialise the csrfProtector work flow
 	 * @parameters: variables to override default configuration loaded from file
+	 * @param $length - length of CSRF_AUTH_TOKEN to be generated
 	 * @param $logging - bool, true to enable logging and false to disable
 	 * @param $action - int, for different actions to be taken in case of failed validation
 	 * @return void
 	 * @throw configFileNotFoundException			
 	 */
-	public static function init($logging = null, $action = null)
+	public static function init($length = null, $logging = null, $action = null)
 	{
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
@@ -65,6 +66,11 @@ class csrfProtector
 
 		//load configuration file and properties
 		self::$config = include(__DIR__ ."/../config.php");
+
+		//overriding length property if passed in parameters
+		if ($length !== null) {
+			self::$config['tokenLength'] = intval($length);
+		}
 
 		//loading logging property
 		if ($logging !== null) {
@@ -182,8 +188,13 @@ class csrfProtector
 	 * @param: length to hash required, int
 	 * @return string
 	 */
-	public static function generateAuthToken($length = 64)
+	public static function generateAuthToken()
 	{
+		//if config tokenLength value is 0 or some non int
+		if (intval(self::$config['tokenLength']) === 0) {
+			self::$config['tokenLength'] = 32;	//set as default
+		}
+
 		//if $length > 128 throw exception #todo 
 
 		if (function_exists("hash_algos") && in_array("sha512", hash_algos())) {
@@ -200,7 +211,7 @@ class csrfProtector
 				$token .= $c;
 			}
 		}
-		return substr($token, 0, $length);
+		return substr($token, 0, self::$config['tokenLength']);
 	}
 
 	/**
