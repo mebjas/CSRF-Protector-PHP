@@ -111,12 +111,14 @@ class csrfProtector
 				&& ($_POST[CSRFP_POST] === $_COOKIE[self::$tokenName])
 				)) {
 
+				//#todo/#needs discussion make it permenently enabled
 				if (self::$config['isLoggingEnabled']) {
 					if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
 						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 					}
-				//call the logging function
-				self::logCSRFattack();
+
+					//call the logging function
+					self::logCSRFattack();
 				}
 
 				//#todo: ask mentors if $failedAuthAction is better as an int or string
@@ -151,27 +153,9 @@ class csrfProtector
 		} 
 
 		/**
-		 * in case cookie exist -> refresh it
-		 * else create one
+		 * Refresh cookie for each request
 		 */
-		self::refreshCookie();	
-	}
-
-	/**
-	 * function to refresh cookie sent to browser
-	 * @param void
-	 * @return void
-	 */
-	public static function refreshCookie()
-	{
-		if (!isset($_COOKIE[self::$tokenName])) {
-			self::createCookie();
-		} else {
-			//reset the cookie to a longer period
-			setcookie(self::$tokenName, 
-				$_COOKIE[self::$tokenName], 
-				time() + self::$cookieExpiryTime);
-		}
+		self::setCookie();	
 	}
 
 	/**
@@ -179,7 +163,7 @@ class csrfProtector
 	 * @param: void
 	 * @return void
 	 */
-	public static function createCookie()
+	public static function setCookie()
 	{
 		setcookie(self::$tokenName, 
 			self::generateAuthToken(), 
@@ -284,7 +268,7 @@ class csrfProtector
 		}
 
 		//miniature version of the log
-		$log = date("d M Y, H:i:s") ." | IP: " .$_SERVER['REMOTE_ADDR'] .PHP_EOL;
+		$log = date("d M Y, H:i:s") ." | IP: " .$_SERVER['REMOTE_ADDR'] ." | " .json_encode($_POST) .PHP_EOL;
 		/*
 		 * #todo, change log style, do log the attempted POST data 
 		 */
