@@ -47,6 +47,8 @@ class csrfProtector
 	 * @property #4: customErrorMessage (string) => custom error message to be sent in case
 	 *						of failed authentication
 	 * @property #5: jsFile (string) => location of the CSRFProtector js file
+	 * @property #6: tokenLength (int) => default length of hash
+	 * @property #7: disabledJavascriptMessage (string) => error message if client's js is disabled
 	 */
 	public static $config = array();
 
