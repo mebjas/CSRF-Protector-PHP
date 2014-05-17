@@ -3,7 +3,6 @@
  * Configuration file for CSRF Protector z
  */
 return array(
-	"isLoggingEnabled" => true,
 	"logDirectory" => "../log",
 	"failedAuthAction" => 0,
 	"errorRedirectionPage" => "http://localhost/",

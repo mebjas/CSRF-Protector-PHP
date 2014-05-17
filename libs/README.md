@@ -1,8 +1,6 @@
 CSRFProtector configuration
 ==========================================
 
-
-`isLoggingEnabled` `bool` true if every failed validation for CSRF should be logged!<br>
 `logDirectory` `string` log file directory with respect to `/libs/`<br>
 >for example, if the library is present at /x/y/ and config file at /x/y/libs/config.php<br>
 > `../logs/` would mean `/x/logs/`

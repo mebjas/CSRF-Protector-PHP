@@ -40,15 +40,14 @@ class csrfProtector
 
 	/**
 	 * config file for CSRFProtector
-	 * @var int Array, length = 5
-	 * @property #1: isLoggingEnabled (bool) => true if logging is allowed, false otherwise
-	 * @property #2: failedAuthAction (int) => action to be taken in case autherisation fails
-	 * @property #3: logDirectory (string) => directory in which log will be saved
-	 * @property #4: customErrorMessage (string) => custom error message to be sent in case
+	 * @var int Array, length = 6
+	 * @property #1: failedAuthAction (int) => action to be taken in case autherisation fails
+	 * @property #2: logDirectory (string) => directory in which log will be saved
+	 * @property #3: customErrorMessage (string) => custom error message to be sent in case
 	 *						of failed authentication
-	 * @property #5: jsFile (string) => location of the CSRFProtector js file
-	 * @property #6: tokenLength (int) => default length of hash
-	 * @property #7: disabledJavascriptMessage (string) => error message if client's js is disabled
+	 * @property #4: jsFile (string) => location of the CSRFProtector js file
+	 * @property #5: tokenLength (int) => default length of hash
+	 * @property #6: disabledJavascriptMessage (string) => error message if client's js is disabled
 	 */
 	public static $config = array();
 
@@ -61,7 +60,7 @@ class csrfProtector
 	 * @return void
 	 * @throw configFileNotFoundException			
 	 */
-	public static function init($length = null, $logging = null, $action = null)
+	public static function init($length = null, $action = null)
 	{
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
@@ -73,11 +72,6 @@ class csrfProtector
 		//overriding length property if passed in parameters
 		if ($length !== null) {
 			self::$config['tokenLength'] = intval($length);
-		}
-
-		//loading logging property
-		if ($logging !== null) {
-			self::$config['isLoggingEnabled'] = (bool) $logging;
 		}
 		
 		//action that is needed to be taken in case of failed authorisation
@@ -112,14 +106,12 @@ class csrfProtector
 				)) {
 
 				//#todo/#needs discussion make it permenently enabled
-				if (self::$config['isLoggingEnabled']) {
-					if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
-						throw new logDirectoryNotFoundException("Log Directory Not Found!");		
-					}
-
-					//call the logging function
-					self::logCSRFattack();
+				if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
+					throw new logDirectoryNotFoundException("Log Directory Not Found!");		
 				}
+				
+				//call the logging function
+				self::logCSRFattack();
 
 				//#todo: ask mentors if $failedAuthAction is better as an int or string
 				//default case is case 0
