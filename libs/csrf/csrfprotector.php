@@ -54,13 +54,13 @@ class csrfProtector
 	/**
 	 * function to initialise the csrfProtector work flow
 	 * @parameters: variables to override default configuration loaded from file
+	 * @param $isGETEnabled - boolean variable to set GET request validation for a specific page
 	 * @param $length - length of CSRF_AUTH_TOKEN to be generated
-	 * @param $logging - bool, true to enable logging and false to disable
 	 * @param $action - int, for different actions to be taken in case of failed validation
 	 * @return void
 	 * @throw configFileNotFoundException			
 	 */
-	public static function init($length = null, $action = null)
+	public static function init($isGETEnabled = false, $length = null, $action = null)
 	{
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
@@ -68,6 +68,11 @@ class csrfProtector
 
 		//load configuration file and properties
 		self::$config = include(__DIR__ ."/../config.php");
+
+		//overriding isGETEnabled property
+		if ($isGETEnabled === true) {
+			self::$config['isGETEnabled'] = true;
+		}
 
 		//overriding length property if passed in parameters
 		if ($length !== null) {
@@ -94,7 +99,8 @@ class csrfProtector
 	 */
 	public static function authorisePost()
 	{
-		//#todo this method is valid for same origin request only, 
+		//#todo this method is valid for same origin request only,
+		//#todo take required action if self::$config['isGETEnabled'] is true 
 		//enable it for cross origin also sometime
 		//for cross origin the functionality is different
 		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
