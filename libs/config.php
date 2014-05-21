@@ -7,7 +7,8 @@ return array(
 	"logDirectory" => "../log",
 	"failedAuthAction" => array(
 		"GET" => 1,
-		"POST" => 0),
+		"POST" => 0
+		),
 	"errorRedirectionPage" => "http://localhost/",
 	"customErrorMessage" => "",
 	"jsFile" => "http://localhost/test/csrf/js/csrfprotector.js",
