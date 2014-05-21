@@ -285,10 +285,22 @@ class csrfProtector
 		}
 
 		//miniature version of the log
-		$log = date("d M Y, H:i:s") ." | IP: " .$_SERVER['REMOTE_ADDR'] ." | " .json_encode($_POST) .PHP_EOL;
-		/*
-		 * #todo, change log style, do log the attempted POST data 
-		 */
+		$log = array();
+		$log['timestamp'] = time();
+		$log['HOST'] = $_SERVER['HTTP_HOST'];
+		$log['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
+		$log['requestType'] = self::$requestType;
+
+		if (self::$requestType === "GET") {
+			$log['query'] = $_GET;
+		} else {
+			$log['query'] = $_POST;
+		}
+
+		$log['cookie'] = $_COOKIE;
+
+		//convert log array to JSON format to be logged
+		$log = json_encode($log) .PHP_EOL;
 
 		//append log to the file
 		fwrite($logFile, $log);
