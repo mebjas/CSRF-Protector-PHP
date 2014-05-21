@@ -39,6 +39,12 @@ class csrfProtector
 	private static $isValidHTML = false;
 
 	/**
+	 * Varaible to store weather request type is post or get
+	 * @var string
+	 */
+	private static $requestType = "GET";
+
+	/**
 	 * config file for CSRFProtector
 	 * @var int Array, length = 6
 	 * @property #1: failedAuthAction (int) => action to be taken in case autherisation fails
@@ -105,6 +111,9 @@ class csrfProtector
 		//for cross origin the functionality is different
 		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+			//set request type to POST
+			self::$requestType = "POST";
+
 			//currently for same origin only
 			if (!(isset($_POST[CSRFP_POST]) 
 				&& isset($_COOKIE[self::$tokenName])
@@ -123,28 +132,38 @@ class csrfProtector
 				//default case is case 0
 				switch (self::$config['failedAuthAction']) {
 					case 0:
-						unset($_POST);
-						break;
-					case 1:
-						//send 404 header
-						header("HTTP/1.0 404 Not Found");
-						exit("<h2>404 Not Found!</h2>");
-						break;
-					case 2:
 						//send 403 header
 						header('HTTP/1.0 403 Forbidden');
 						exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
 						break;
+					case 1:
+						//unset the query parameters and forward
+						if (self::$requestType === "GET") {
+							unset($_GET);
+						} else {
+							unset($_POST);
+						}
+						break;
+					case 2:
+						//redirect to custom error page
+						header("location: self::$config[errorRedirectionPage]");
+						exit;
 					case 3:
 						//send custom error message
 						exit(self::$config['customErrorMessage']);
 						break;
 					case 4:
-						//redirect to custom error page
-						header("location: self::$config[errorRedirectionPage]");
-						exit;
+						//send 500 header -- internal server error
+						header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+						exit("<h2>500 Internal Server Error!</h2>");
+						break;
 					default:
-						unset($_POST);
+						//unset the query parameters and forward
+						if (self::$requestType === "GET") {
+							unset($_GET);
+						} else {
+							unset($_POST);
+						}
 						break;
 				}					
 			}
