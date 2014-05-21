@@ -120,59 +120,81 @@ class csrfProtector
 				&& ($_POST[CSRFP_POST] === $_COOKIE[self::$tokenName])
 				)) {
 
-				//#todo/#needs discussion make it permenently enabled
-				if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
-					throw new logDirectoryNotFoundException("Log Directory Not Found!");		
-				}
-				
-				//call the logging function
-				self::logCSRFattack();
-
-				//#todo: ask mentors if $failedAuthAction is better as an int or string
-				//default case is case 0
-				switch (self::$config['failedAuthAction']) {
-					case 0:
-						//send 403 header
-						header('HTTP/1.0 403 Forbidden');
-						exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
-						break;
-					case 1:
-						//unset the query parameters and forward
-						if (self::$requestType === "GET") {
-							unset($_GET);
-						} else {
-							unset($_POST);
-						}
-						break;
-					case 2:
-						//redirect to custom error page
-						header("location: self::$config[errorRedirectionPage]");
-						exit;
-					case 3:
-						//send custom error message
-						exit(self::$config['customErrorMessage']);
-						break;
-					case 4:
-						//send 500 header -- internal server error
-						header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-						exit("<h2>500 Internal Server Error!</h2>");
-						break;
-					default:
-						//unset the query parameters and forward
-						if (self::$requestType === "GET") {
-							unset($_GET);
-						} else {
-							unset($_POST);
-						}
-						break;
-				}					
+				//action in case of failed validation
+				self::failedValidationAction();			
 			}
-		} 
+		} else if (self::$config['isGETEnabled']) {
+			
+			//currently for same origin only
+			if (!(isset($_GET[CSRFP_POST]) 
+				&& isset($_COOKIE[self::$tokenName])
+				&& ($_GET[CSRFP_POST] === $_COOKIE[self::$tokenName])
+				)) {
+
+				//action in case of failed validation
+				self::failedValidationAction();			
+			}
+		}
 
 		/**
 		 * Refresh cookie for each request
 		 */
 		self::setCookie();	
+	}
+
+	/**
+	 * function to be called in case of failed validation
+	 * performs logging and take appropriate action
+	 * @param: void
+	 * @return: void
+	 */
+	private static function failedValidationAction()
+	{
+		if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
+			throw new logDirectoryNotFoundException("Log Directory Not Found!");		
+		}
+	
+		//call the logging function
+		self::logCSRFattack();
+
+		//#todo: ask mentors if $failedAuthAction is better as an int or string
+		//default case is case 0
+		switch (self::$config['failedAuthAction']) {
+			case 0:
+				//send 403 header
+				header('HTTP/1.0 403 Forbidden');
+				exit("<h2>403 Access Forbidden by CSRFProtector!</h2>");
+				break;
+			case 1:
+				//unset the query parameters and forward
+				if (self::$requestType === "GET") {
+					unset($_GET);
+				} else {
+					unset($_POST);
+				}
+				break;
+			case 2:
+				//redirect to custom error page
+				header("location: self::$config[errorRedirectionPage]");
+				exit;
+			case 3:
+				//send custom error message
+				exit(self::$config['customErrorMessage']);
+				break;
+			case 4:
+				//send 500 header -- internal server error
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+				exit("<h2>500 Internal Server Error!</h2>");
+				break;
+			default:
+				//unset the query parameters and forward
+				if (self::$requestType === "GET") {
+				unset($_GET);
+				} else {
+					unset($_POST);
+				}
+				break;
+		}		
 	}
 
 	/**
