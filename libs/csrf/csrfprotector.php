@@ -123,7 +123,7 @@ class csrfProtector
 				//action in case of failed validation
 				self::failedValidationAction();			
 			}
-		} else if (self::$config['isGETEnabled']) {
+		} else if (self::$config['isGETEnabled'] && count($_GET)) {
 			
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_POST]) 
@@ -159,7 +159,7 @@ class csrfProtector
 
 		//#todo: ask mentors if $failedAuthAction is better as an int or string
 		//default case is case 0
-		switch (self::$config['failedAuthAction']) {
+		switch (self::$config['failedAuthAction'][self::$requestType]) {
 			case 0:
 				//send 403 header
 				header('HTTP/1.0 403 Forbidden');
