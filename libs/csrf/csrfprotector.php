@@ -123,7 +123,7 @@ class csrfProtector
 				//action in case of failed validation
 				self::failedValidationAction();			
 			}
-		} else if (!self::isURLallowed()) {
+		} else if (!static::isURLallowed()) {
 			
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_POST]) 
@@ -347,7 +347,7 @@ class csrfProtector
 	 * @param: void
 	 * @return: string, current url
 	 */
-	public static function getCurrentUrl()
+	private static function getCurrentUrl()
 	{
 		return $_SERVER['REQUEST_SCHEME'] .'://'
 			.$_SERVER['HTTP_HOST'] .$_SERVER['PHP_SELF'];
@@ -355,7 +355,9 @@ class csrfProtector
 
 	/**
 	 * Function to check if current url mataches for any urls
-	 * Listed in config file
+	 * 		Listed in config file
+	 * This function can be overridden by the developer, and the overriden function
+	 * 		Will be called by the system
 	 * @param: void
 	 * @return: boolean, true is url need no validation, false if validation needed
 	 */ 
