@@ -123,7 +123,7 @@ class csrfProtector
 				//action in case of failed validation
 				self::failedValidationAction();			
 			}
-		} else if (self::$config['isGETEnabled'] && count($_GET)) {
+		} else if (!self::isURLallowed()) {
 			
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_POST]) 
@@ -341,4 +341,32 @@ class csrfProtector
 		return date("m-20y") .".log";
 	}
 
+
+	/**
+	 * Function to return current url of executing page
+	 * @param: void
+	 * @return: string, current url
+	 */
+	public static function getCurrentUrl()
+	{
+		return $_SERVER['REQUEST_SCHEME'] .'://'
+			.$_SERVER['HTTP_HOST'] .$_SERVER['PHP_SELF'];
+	}
+
+	/**
+	 * Function to check if current url mataches for any urls
+	 * Listed in config file
+	 * @param: void
+	 * @return: boolean, true is url need no validation, false if validation needed
+	 */ 
+	public static function isURLallowed() {
+		foreach (self::$config['verifyGetFor'] as $key => $value) {
+			$value = str_replace(array('/','*'), array('\/','(.*)'), $value);
+			preg_match('/' .$value .'/', self::getCurrentUrl(), $output);
+			if (count($output) > 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 };
