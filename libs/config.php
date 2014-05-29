@@ -15,7 +15,7 @@ return array(
 	Cross-Site Request Forgeries </a> attacks. In order to do so, you must have JavaScript enabled in your web browser otherwise this site will fail to work correctly for you.
 	 See details of your web browser for how to enable JavaScript.",
 	 "verifyGetFor" => array(
-	 		"*://*/*/-",
-	 		"*://*/test/csrf/delete.php"
+	 		"http://*/*",
+	 		"*://*/*/delete.php"
 	 	)
 );
