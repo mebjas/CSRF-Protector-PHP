@@ -204,9 +204,11 @@ class csrfProtector
 	 */
 	public static function setCookie()
 	{
+		$token = self::generateAuthToken();
 		setcookie(self::$tokenName, 
-			self::generateAuthToken(), 
+			$token, 
 			time() + self::$cookieExpiryTime);
+		$_COOKIE[self::$tokenName] = $token;
 	}
 
 	/**
