@@ -1,32 +1,49 @@
 /** 
- * javascript code for OWASP CSRF Protector
+ * =================================================================
+ * Javascript code for OWASP CSRF Protector
+ * Task: Fetch csrftoken from cookie, and attach it to every
+ * 		POST request
+ *		Allowed GET url
+ * =================================================================
  */
 
+// Array of patterns of url, for which csrftoken need to be added
+// In case of GET request also, provided from server
+var checkForUrls = new Array();
 
-for(var i = 0; i<document.forms.length; i++) {
-	document.forms[i].onsubmit = function(evt) {
-		if (!evt.srcElement.CSRFPROTECTOR_AUTH_TOKEN) {
-			evt.srcElement.innerHTML += "<input type='hidden' name='CSRFPROTECTOR_AUTH_TOKEN' value='" 
-			+getAuthKey() +"'>";
-		}
-	};
+/**
+ * Function to check if a certain url is allowed to perform the request
+ * With or without csrf token
+ * @param: string, url
+ * @return: boolean, 	true if csrftoken is not needed
+ * 						false if csrftoken is needed
+ */
+function isValidGetRequest(url) {
+	for (var i = 0; i < checkForUrls.length; i++) {
+		//#incomplete
+	}
+	return true;
 }
 
-
 /** 
- * function to get Auth key from cookie and return it to requesting function
+ * function to get Auth key from cookie Andreturn it to requesting function
+ * @param: void
+ * @return: string, csrftoken retrieved from cookie
  */
 function getAuthKey() {
 	var re = new RegExp("CSRF_AUTH_TOKEN=([^;]+)(;|$)");
-	if(authKey === null) {
-		var RegExpArray = re.exec(document.cookie);
-		return RegExpArray[1];
+	var RegExpArray = re.exec(document.cookie);
+
+	if (RegExpArray[1].length === 0) {
+		//#todo: Action to take if CSRFtoken not found
 	}
-	return authKey;
+	return RegExpArray[1];
 }
 
 /** 
- * function to get domain of any url
+ * Function to get domain of any url
+ * @param: string, url
+ * @return: string, domain of url
  */
 function getDomain(url) {
 	// proxy doesn't work on https anyway
@@ -35,43 +52,81 @@ function getDomain(url) {
 	return /http:\/\/([^\/]+)/.exec(url)[1];
 }
 
+//==================================================================
+// Adding csrftoken to request resulting from <form> submissions
+// Add for each POST, while for mentioned GET request
+//==================================================================
+for(var i = 0; i<document.forms.length; i++) {
+	document.forms[i].onsubmit = function(event) {
+		console.log(event.target);
+		if (!event.srcElement.CSRFPROTECTOR_AUTH_TOKEN) {
+			event.srcElement.innerHTML += "<input type='hidden' name='CSRFPROTECTOR_AUTH_TOKEN' value='" 
+			+getAuthKey() +"'>";
+		}
+	};
+}
 
-//===============================================================
-// Writing wrapper for XMLHttpRequest
-// Set X-No-CSRF to true before sending if request method is POST
-//===============================================================
 
-//add a property method to XMLHttpRequst class
+//==================================================================
+// Wrapper for XMLHttpRequest
+// Set X-No-CSRF to true before sending if request method is 
+//==================================================================
+
+/** 
+ * Wrapper to XHR open method
+ * Add a property method to XMLHttpRequst class
+ * @param: all parameters to XHR open method
+ * @return: object returned by default, XHR open method
+ */
 function new_open(method, url, async, username, password) {
 	this.method = method;
+	this.url = url;
 	return this.old_open(method, url, async, username, password);
 }
 
-//currently functional for POST requests only
+/** 
+ * Wrapper to XHR send method
+ * Add query paramter to XHR object
+ * @param: all parameters to XHR send method
+ * @return: object returned by default, XHR send method
+ */
 function new_send(data) {
-	if (this.method === "POST") {
+	if (this.method === 'POST'
+		|| (this.method === 'GET' && !isValidGetRequest(this.url))) {
+
+		//#needDiscussion: whats the utility, was used in paper by Riccardo
 		this.setRequestHeader("X-No-CSRF", "true");
-		if(data.length !== 0)
-   		data += "&";
+
+		if (data.length !== 0) {
+   			data += "&";
+   		}
     	data += "CSRFPROTECTOR_AUTH_TOKEN=" +getAuthKey();
     }
     return this.old_send(data);
 }
 
-
+//wrappig
 XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = new_open;
 XMLHttpRequest.prototype.send = new_send;
 
-//================================================================
-// Rewrite existing urls for CSRF token
+//==================================================================
+// Rewrite existing urls ( Attach CSRF token )
 // Rules:
+// Rewrite those urls which matches the regex sent by Server
 // Ingore cross origin urls & internal links (one with hashtags)
 // Append the token to those url already containig GET query parameter(s)
 // Add the token to those which does not contain GET query parameter(s)
-//================================================================
+//==================================================================
+
 for (var i = 0; i<document.links.length; i++) {
+
+	if (isValidGetRequest(document.links[i])) {
+		//needs not attach a csrftoken as the request is safe
+		continue;
+	}
+
 	if(getDomain(document.links[i].href).indexOf(document.domain) === -1) {
 		//cross origin -- ignore
 		continue;
