@@ -299,7 +299,7 @@ class csrfProtector
 	{
 		//if file doesnot exist for, create it
 		$logFile = fopen(__DIR__ ."/../" .self::$config['logDirectory']
-		."/" .self::getCurrentLogFileName(), "a+");
+		."/" .date("m-20y") .".log", "a+");
 		
 		//throw exception if above fopen fails
 		if (!$logFile) {
@@ -330,17 +330,6 @@ class csrfProtector
 		//close the file handler
 		fclose($logFile);
 	}
-
-	/**
-	 * function to return filename of log file for current date
-	 * @param: void
-	 * @return: string, filename
-	 */
-	private static function getCurrentLogFileName()
-	{
-		return date("m-20y") .".log";
-	}
-
 
 	/**
 	 * Function to return current url of executing page
