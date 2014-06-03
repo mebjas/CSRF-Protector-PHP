@@ -9,7 +9,26 @@
 
 // Array of patterns of url, for which csrftoken need to be added
 // In case of GET request also, provided from server
-var checkForUrls = new Array();
+var checkForUrls = new Array(<?php
+	if (isset($_GET['param'])) {
+		$patternArray = json_decode($_GET['param'],false);
+		if ($patternArray) {
+			foreach ($patternArray as $key => $value) {
+				if ($key !== 0) {
+					echo ',';
+				}
+				echo "'". $value ."'";
+			}
+		}
+	}
+?>);
+
+//convert these to regex objects
+for (var i = 0; i < checkForUrls.length; i++) {
+	checkForUrls[i] = checkForUrls[i].replace(/\*/g, '(.*)')
+						.replace(/\//g, "\\/");
+	checkForUrls[i] = new RegExp(checkForUrls[i]);
+}
 
 /**
  * Function to check if a certain url is allowed to perform the request
@@ -20,7 +39,10 @@ var checkForUrls = new Array();
  */
 function isValidGetRequest(url) {
 	for (var i = 0; i < checkForUrls.length; i++) {
-		//#incomplete
+		var match = checkForUrls[i].exec(url);
+		if (match != null && match.length > 0) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -56,7 +78,7 @@ function getDomain(url) {
 // Adding csrftoken to request resulting from <form> submissions
 // Add for each POST, while for mentioned GET request
 //==================================================================
-for(var i = 0; i<document.forms.length; i++) {
+for(var i = 0; i < document.forms.length; i++) {
 	document.forms[i].onsubmit = function(event) {
 		console.log(event.target);
 		if (!event.srcElement.CSRFPROTECTOR_AUTH_TOKEN) {
@@ -122,7 +144,7 @@ XMLHttpRequest.prototype.send = new_send;
 
 for (var i = 0; i<document.links.length; i++) {
 
-	if (isValidGetRequest(document.links[i])) {
+	if (isValidGetRequest(document.links[i].href)) {
 		//needs not attach a csrftoken as the request is safe
 		continue;
 	}

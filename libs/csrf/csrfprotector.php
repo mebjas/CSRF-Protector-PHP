@@ -280,7 +280,9 @@ class csrfProtector
 	    	"</noscript>", $buffer);
 
 
-	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'"></script>';	
+	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'?param=' 
+	    	.urlencode(json_encode(self::$config['verifyGetFor'])) 
+	    	.'"></script>';	
 
 	    //implant the CSRFGuard js file to outgoing script
 	    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
@@ -346,9 +348,7 @@ class csrfProtector
 
 	/**
 	 * Function to check if current url mataches for any urls
-	 * 		Listed in config file
-	 * This function can be overridden by the developer, and the overriden function
-	 * 		Will be called by the system
+	 * Listed in config file
 	 * @param: void
 	 * @return: boolean, true is url need no validation, false if validation needed
 	 */ 
