@@ -23,7 +23,7 @@ var checkForUrls = new Array(<?php
 	}
 ?>);
 
-//convert these to regex objects
+//convert these rules to regex objects
 for (var i = 0; i < checkForUrls.length; i++) {
 	checkForUrls[i] = checkForUrls[i].replace(/\*/g, '(.*)')
 						.replace(/\//g, "\\/");
@@ -40,7 +40,7 @@ for (var i = 0; i < checkForUrls.length; i++) {
 function isValidGetRequest(url) {
 	for (var i = 0; i < checkForUrls.length; i++) {
 		var match = checkForUrls[i].exec(url);
-		if (match != null && match.length > 0) {
+		if (match !== null && match.length > 0) {
 			return false;
 		}
 	}
@@ -74,93 +74,103 @@ function getDomain(url) {
 	return /http:\/\/([^\/]+)/.exec(url)[1];
 }
 
-//==================================================================
-// Adding csrftoken to request resulting from <form> submissions
-// Add for each POST, while for mentioned GET request
-//==================================================================
-for(var i = 0; i < document.forms.length; i++) {
-	document.forms[i].onsubmit = function(event) {
-		console.log(event.target);
-		if (!event.srcElement.CSRFPROTECTOR_AUTH_TOKEN) {
-			event.srcElement.innerHTML += "<input type='hidden' name='CSRFPROTECTOR_AUTH_TOKEN' value='" 
-			+getAuthKey() +"'>";
-		}
-	};
-}
+//==========================================================
+// Adding tokens, wrappers on window onload
+//==========================================================
 
+window.onload = function() {
 
-//==================================================================
-// Wrapper for XMLHttpRequest
-// Set X-No-CSRF to true before sending if request method is 
-//==================================================================
-
-/** 
- * Wrapper to XHR open method
- * Add a property method to XMLHttpRequst class
- * @param: all parameters to XHR open method
- * @return: object returned by default, XHR open method
- */
-function new_open(method, url, async, username, password) {
-	this.method = method;
-	this.url = url;
-	return this.old_open(method, url, async, username, password);
-}
-
-/** 
- * Wrapper to XHR send method
- * Add query paramter to XHR object
- * @param: all parameters to XHR send method
- * @return: object returned by default, XHR send method
- */
-function new_send(data) {
-	if (this.method === 'POST'
-		|| (this.method === 'GET' && !isValidGetRequest(this.url))) {
-
-		//#needDiscussion: whats the utility, was used in paper by Riccardo
-		this.setRequestHeader("X-No-CSRF", "true");
-
-		if (data.length !== 0) {
-   			data += "&";
-   		}
-    	data += "CSRFPROTECTOR_AUTH_TOKEN=" +getAuthKey();
-    }
-    return this.old_send(data);
-}
-
-//wrappig
-XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
-XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = new_open;
-XMLHttpRequest.prototype.send = new_send;
-
-//==================================================================
-// Rewrite existing urls ( Attach CSRF token )
-// Rules:
-// Rewrite those urls which matches the regex sent by Server
-// Ingore cross origin urls & internal links (one with hashtags)
-// Append the token to those url already containig GET query parameter(s)
-// Add the token to those which does not contain GET query parameter(s)
-//==================================================================
-
-for (var i = 0; i<document.links.length; i++) {
-
-	if (isValidGetRequest(document.links[i].href)) {
-		//needs not attach a csrftoken as the request is safe
-		continue;
+	//==================================================================
+	// Adding csrftoken to request resulting from <form> submissions
+	// Add for each POST, while for mentioned GET request
+	//==================================================================
+	for(var i = 0; i < document.forms.length; i++) {
+		document.forms[i].onsubmit = function(event) {
+			if (!event.srcElement.csrfp_token) {
+				event.srcElement.innerHTML += "<input type='hidden' name='csrfp_token' value='" 
+				+getAuthKey() +"'>";
+			}
+		};
 	}
 
-	if(getDomain(document.links[i].href).indexOf(document.domain) === -1) {
-		//cross origin -- ignore
-		continue;
-	} else if (document.links[i].href.indexOf('#') !== -1) {
-		//hash tag | internal link -- ignore
-		continue;
-	} else if (document.links[i].href.indexOf('?') !== -1) {
-		document.links[i].href += "&CSRFPROTECTOR_AUTH_TOKEN=" +getAuthKey();
-	} else {
-		if (document.links[i].href[document.links[i].href.length - 1] != '/') {
-			document.links[i].href += '/';
-		}
-		document.links[i].href += "?CSRFPROTECTOR_AUTH_TOKEN=" +getAuthKey();
+
+	//==================================================================
+	// Wrapper for XMLHttpRequest
+	// Set X-No-CSRF to true before sending if request method is 
+	//==================================================================
+
+	/** 
+	 * Wrapper to XHR open method
+	 * Add a property method to XMLHttpRequst class
+	 * @param: all parameters to XHR open method
+	 * @return: object returned by default, XHR open method
+	 */
+	function new_open(method, url, async, username, password) {
+		this.method = method;
+		this.url = url;
+		return this.old_open(method, url, async, username, password);
 	}
+
+	/** 
+	 * Wrapper to XHR send method
+	 * Add query paramter to XHR object
+	 * @param: all parameters to XHR send method
+	 * @return: object returned by default, XHR send method
+	 */
+	function new_send(data) {
+		if (this.method === 'POST'
+			|| (this.method === 'GET' && !isValidGetRequest(this.url))) {
+
+			//#needDiscussion: whats the utility, was used in paper by Riccardo
+			this.setRequestHeader("X-No-CSRF", "true");
+
+			if (data.length !== 0) {
+				data += "&";
+			}
+			data += "csrfp_token=" +getAuthKey();
+		}
+		return this.old_send(data);
+	}
+
+	//wrappig
+	XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
+	XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
+	XMLHttpRequest.prototype.open = new_open;
+	XMLHttpRequest.prototype.send = new_send;
+
+	//==================================================================
+	// Rewrite existing urls ( Attach CSRF token )
+	// Rules:
+	// Rewrite those urls which matches the regex sent by Server
+	// Ingore cross origin urls & internal links (one with hashtags)
+	// Append the token to those url already containig GET query parameter(s)
+	// Add the token to those which does not contain GET query parameter(s)
+	//==================================================================
+
+	for (var i = 0; i < document.links.length; i++) {
+
+		if (isValidGetRequest(document.links[i].href)) {
+			//needs not attach a csrftoken as the request is safe
+			continue;
+		}
+
+		if(getDomain(document.links[i].href).indexOf(document.domain) === -1) {
+			//cross origin -- ignore
+			continue;
+		} else if (document.links[i].href.indexOf('#') !== -1) {
+			//hash tag | internal link -- ignore
+			continue;
+		} else if (document.links[i].href.indexOf('?') !== -1 
+			&& !isValidGetRequest(document.links[i].href)) {
+			document.links[i].href += "&csrfp_token=" +getAuthKey();
+		} else if (!isValidGetRequest(document.links[i].href)) {
+			//if token already allocated, just need to update it!
+			
+			if (document.links[i].href[document.links[i].href.length - 1] != '/') {
+				document.links[i].href += '/';
+			}
+			document.links[i].href += "?csrfp_token=" +getAuthKey();
+		}
+	}
+
 }
