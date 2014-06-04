@@ -87,9 +87,12 @@ window.onload = function() {
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
 		document.forms[i].onsubmit = function(event) {
-			if (!event.srcElement.csrfp_token) {
-				event.srcElement.innerHTML += "<input type='hidden' name='csrfp_token' value='" 
-				+getAuthKey() +"'>";
+			if (!event.target.csrfp_token) {
+				var hiddenObj = document.createElement("input");
+				hiddenObj.name = 'csrfp_token';
+				hiddenObj.type = 'hidden';
+				hiddenObj.value = getAuthKey();
+				event.target.appendChild(hiddenObj);
 			}
 		};
 	}
