@@ -55,9 +55,10 @@ function isValidGetRequest(url) {
 function getAuthKey() {
 	var re = new RegExp("CSRF_AUTH_TOKEN=([^;]+)(;|$)");
 	var RegExpArray = re.exec(document.cookie);
-
-	if (RegExpArray[1].length === 0) {
+	
+	if (RegExpArray === null) {
 		//#todo: Action to take if CSRFtoken not found
+		return false;
 	}
 	return RegExpArray[1];
 }
@@ -123,10 +124,13 @@ window.onload = function() {
 
 			//#needDiscussion: whats the utility, was used in paper by Riccardo
 			this.setRequestHeader("X-No-CSRF", "true");
-
-			if (data.length !== 0) {
+			
+			if (data !== undefined) {
 				data += "&";
+			} else {
+				data = "";
 			}
+			
 			data += "csrfp_token=" +getAuthKey();
 		}
 		return this.old_send(data);
