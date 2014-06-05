@@ -155,7 +155,7 @@ class csrfProtector
 		}
 	
 		//call the logging function
-		self::logCSRFattack();
+		static::logCSRFattack();
 
 		//#todo: ask mentors if $failedAuthAction is better as an int or string
 		//default case is case 0
