@@ -122,9 +122,9 @@ window.onload = function() {
 	 * @return: object returned by default, XHR send method
 	 */
 	function new_send(data) {
-		if (this.method === 'POST'
-			|| (this.method === 'GET' && !isValidGetRequest(this.url))) {
-
+		if (this.method.toLowerCase() === 'post'
+			|| (this.method.toLowerCase() === 'get' && !isValidGetRequest(this.url))) {
+			
 			//#needDiscussion: whats the utility, was used in paper by Riccardo
 			this.setRequestHeader("X-No-CSRF", "true");
 			
@@ -155,11 +155,6 @@ window.onload = function() {
 	//==================================================================
 
 	for (var i = 0; i < document.links.length; i++) {
-
-		if (isValidGetRequest(document.links[i].href)) {
-			//needs not attach a csrftoken as the request is safe
-			continue;
-		}
 
 		if(getDomain(document.links[i].href).indexOf(document.domain) === -1) {
 			//cross origin -- ignore
