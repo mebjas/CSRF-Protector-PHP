@@ -69,10 +69,9 @@ function getAuthKey() {
  * @return: string, domain of url
  */
 function getDomain(url) {
-	// proxy doesn't work on https anyway
-	if (url.indexOf("http://") !== 0)
+	if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0)
 		return document.domain;
-	return /http:\/\/([^\/]+)/.exec(url)[1];
+	return /http(s)?:\/\/([^\/]+)/.exec(url)[2];
 }
 
 //==========================================================
@@ -111,7 +110,16 @@ window.onload = function() {
 	 */
 	function new_open(method, url, async, username, password) {
 		this.method = method;
-		this.url = url;
+
+		if (method.toLowerCase() === 'get' && !isValidGetRequest(url)) {
+			//modify the url
+			if (url.indexOf('?') === -1) {
+				url += "?csrfp_token=" +getAuthKey();
+			} else {
+				url += "&csrfp_token" +getAuthKey();
+			}
+		}
+
 		return this.old_open(method, url, async, username, password);
 	}
 
@@ -122,8 +130,7 @@ window.onload = function() {
 	 * @return: object returned by default, XHR send method
 	 */
 	function new_send(data) {
-		if (this.method.toLowerCase() === 'post'
-			|| (this.method.toLowerCase() === 'get' && !isValidGetRequest(this.url))) {
+		if (this.method.toLowerCase() === 'post') {
 			
 			//#needDiscussion: whats the utility, was used in paper by Riccardo
 			this.setRequestHeader("X-No-CSRF", "true");
@@ -156,22 +163,28 @@ window.onload = function() {
 
 	for (var i = 0; i < document.links.length; i++) {
 
-		if(getDomain(document.links[i].href).indexOf(document.domain) === -1) {
+		var urlDisect = document.links[i].href.split('#');
+		var url = urlDisect[0];
+		var hash = urlDisect[1];
+		
+		if(getDomain(url).indexOf(document.domain) === -1) {
 			//cross origin -- ignore
 			continue;
-		} else if (document.links[i].href.indexOf('#') !== -1) {
-			//hash tag | internal link -- ignore
+		}
+		if (isValidGetRequest(url)) {
+			//not provided in rules
 			continue;
-		} else if (document.links[i].href.indexOf('?') !== -1 
-			&& !isValidGetRequest(document.links[i].href)) {
-			document.links[i].href += "&csrfp_token=" +getAuthKey();
-		} else if (!isValidGetRequest(document.links[i].href)) {
-			//if token already allocated, just need to update it!
-			
-			if (document.links[i].href[document.links[i].href.length - 1] != '/') {
-				document.links[i].href += '/';
-			}
-			document.links[i].href += "?csrfp_token=" +getAuthKey();
+		}
+		
+		if (url.indexOf('?') !== -1) {
+			url += "&csrfp_token=" +getAuthKey();
+		} else {
+			url += "?csrfp_token=" +getAuthKey();
+		}
+		
+		document.links[i].href = url;
+		if (hash !== undefined) {
+			document.links[i].href += '#' +hash;
 		}
 	}
 
