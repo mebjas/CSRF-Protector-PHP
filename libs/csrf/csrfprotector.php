@@ -95,7 +95,8 @@ class csrfProtector
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
 
-		if (!isset($_COOKIE[self::$tokenName]))
+		if (!isset($_COOKIE[self::$tokenName])
+			|| !isset($_SESSION[self::$tokenName]))
 			self::refreshToken();
 	}
 
