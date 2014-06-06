@@ -24,7 +24,7 @@ class csrfProtector
 	 * expiry time for cookie
 	 * @var int
 	 */
-	public static $cookieExpiryTime = 300;	//5 minutes
+	public static $cookieExpiryTime = 1800;	//30 minutes
 
 	/**
 	 * flag for cross origin/same origin request
@@ -67,6 +67,11 @@ class csrfProtector
 	 */
 	public static function init($length = null, $action = null)
 	{
+		//start session in case its not
+		if (session_id() == '') {
+		    session_start();
+		 }
+
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
 		}
@@ -89,6 +94,9 @@ class csrfProtector
 
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
+
+		if (!isset($_COOKIE[self::$tokenName]))
+			self::refreshToken();
 	}
 
 	/**
@@ -111,29 +119,28 @@ class csrfProtector
 			//currently for same origin only
 			if (!(isset($_POST[CSRFP_POST]) 
 				&& isset($_COOKIE[self::$tokenName])
-				&& ($_POST[CSRFP_POST] === $_COOKIE[self::$tokenName])
+				&& ($_POST[CSRFP_POST] === $_SESSION[self::$tokenName])
 				)) {
 
 				//action in case of failed validation
 				self::failedValidationAction();			
+			} else {
+				self::refreshToken();	//refresh token for successfull validation
 			}
 		} else if (!static::isURLallowed()) {
 			
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_POST]) 
 				&& isset($_COOKIE[self::$tokenName])
-				&& ($_GET[CSRFP_POST] === $_COOKIE[self::$tokenName])
+				&& ($_GET[CSRFP_POST] === $_SESSION[elf::$tokenName])
 				)) {
 
 				//action in case of failed validation
 				self::failedValidationAction();			
+			} else {
+				self::refreshToken();	//refresh token for successfull validation
 			}
-		}
-
-		/**
-		 * Refresh cookie for each request
-		 */
-		self::setCookie();	
+		}	
 	}
 
 	/**
@@ -196,9 +203,14 @@ class csrfProtector
 	 * @param: void
 	 * @return void
 	 */
-	public static function setCookie()
+	public static function refreshToken()
 	{
 		$token = self::generateAuthToken();
+
+		//set token to session for server side validation
+		$_SESSION[self::$tokenName] = $token;
+
+		//set token to cookie for client side processing
 		setcookie(self::$tokenName, 
 			$token, 
 			time() + self::$cookieExpiryTime);
