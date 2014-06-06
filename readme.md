@@ -23,3 +23,5 @@ simply include the library and call the `init()` function!
 
 ##Join Discussions on mailing list
 [link to mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
+
+for any other queries contact me at: **minhaz@owasp.org**
