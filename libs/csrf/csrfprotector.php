@@ -1,7 +1,7 @@
 <?php
 
 //name of HTTP POST variable for authentication
-define("CSRFP_POST","CSRFPROTECTOR_AUTH_TOKEN");
+define("CSRFP_POST","csrfp_token");
 
 /**
  * child exception classes
@@ -60,13 +60,12 @@ class csrfProtector
 	/**
 	 * function to initialise the csrfProtector work flow
 	 * @parameters: variables to override default configuration loaded from file
-	 * @param $isGETEnabled - boolean variable to set GET request validation for a specific page
 	 * @param $length - length of CSRF_AUTH_TOKEN to be generated
-	 * @param $action - int, for different actions to be taken in case of failed validation
+	 * @param $action - int array, for different actions to be taken in case of failed validation
 	 * @return void
 	 * @throw configFileNotFoundException			
 	 */
-	public static function init($isGETEnabled = false, $length = null, $action = null)
+	public static function init($length = null, $action = null)
 	{
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
@@ -75,11 +74,6 @@ class csrfProtector
 		//load configuration file and properties
 		self::$config = include(__DIR__ ."/../config.php");
 
-		//overriding isGETEnabled property
-		if ($isGETEnabled === true) {
-			self::$config['isGETEnabled'] = true;
-		}
-
 		//overriding length property if passed in parameters
 		if ($length !== null) {
 			self::$config['tokenLength'] = intval($length);
@@ -87,7 +81,7 @@ class csrfProtector
 		
 		//action that is needed to be taken in case of failed authorisation
 		if ($action !== null) {
-			self::$config['failedAuthAction'] = intval($action);
+			self::$config['failedAuthAction'] = $action;
 		}	
 
 		//authorise the incoming request
@@ -167,10 +161,10 @@ class csrfProtector
 				break;
 			case 1:
 				//unset the query parameters and forward
-				if (self::$requestType === "GET") {
-					unset($_GET);
+				if (self::$requestType === 'GET') {
+					$_GET = [];
 				} else {
-					unset($_POST);
+					$_POST = [];
 				}
 				break;
 			case 2:
@@ -188,10 +182,10 @@ class csrfProtector
 				break;
 			default:
 				//unset the query parameters and forward
-				if (self::$requestType === "GET") {
-				unset($_GET);
+				if (self::$requestType === 'GET') {
+					$_GET = [];
 				} else {
-					unset($_POST);
+					$_POST = [];
 				}
 				break;
 		}		
@@ -208,7 +202,7 @@ class csrfProtector
 		setcookie(self::$tokenName, 
 			$token, 
 			time() + self::$cookieExpiryTime);
-		$_COOKIE[self::$tokenName] = $token;
+		//$_COOKIE[self::$tokenName] = $token;
 	}
 
 	/**
