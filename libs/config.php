@@ -7,7 +7,7 @@ return array(
 	"failedAuthAction" => array(
 		"GET" => 0,
 		"POST" => 0),
-	"errorRedirectionPage" => "http://localhost/",
+	"errorRedirectionPage" => "",
 	"customErrorMessage" => "",
 	"jsFile" => "http://localhost/test/csrf/js/csrfprotector.php",
 	"tokenLength" => 10,
