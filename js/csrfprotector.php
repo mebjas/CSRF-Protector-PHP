@@ -85,15 +85,15 @@ window.onload = function() {
 	// Add for each POST, while for mentioned GET request
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
-		document.forms[i].onsubmit = function(event) {
-			if (!event.target.csrfp_token) {
-				var hiddenObj = document.createElement("input");
+		document.forms[i].addEventListener("submit", function(event) {
+            if (!event.target.csrfp_token) {
+                var hiddenObj = document.createElement("input");
 				hiddenObj.name = 'csrfp_token';
 				hiddenObj.type = 'hidden';
 				hiddenObj.value = getAuthKey();
 				event.target.appendChild(hiddenObj);
 			}
-		};
+		});
 	}
 
 
