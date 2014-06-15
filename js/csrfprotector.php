@@ -162,30 +162,33 @@ window.onload = function() {
 	//==================================================================
 
 	for (var i = 0; i < document.links.length; i++) {
-
-		var urlDisect = document.links[i].href.split('#');
-		var url = urlDisect[0];
-		var hash = urlDisect[1];
-		
-		if(getDomain(url).indexOf(document.domain) === -1) {
-			//cross origin -- ignore
-			continue;
-		}
-		if (isValidGetRequest(url)) {
-			//not provided in rules
-			continue;
-		}
-		
-		if (url.indexOf('?') !== -1) {
-			url += "&csrfp_token=" +getAuthKey();
-		} else {
-			url += "?csrfp_token=" +getAuthKey();
-		}
-		
-		document.links[i].href = url;
-		if (hash !== undefined) {
-			document.links[i].href += '#' +hash;
-		}
+        document.links[i].addEventListener("click",function (event){
+            var urlDisect = event.target.href.split('#');
+            var url = urlDisect[0];
+            var hash = urlDisect[1];
+            
+            if(getDomain(url).indexOf(document.domain) === -1) {
+                //cross origin -- ignore
+            }
+            if (isValidGetRequest(url)) {
+                //not provided in rules
+            }
+            
+            if (url.indexOf('?') !== -1) {
+                if(url.indexOf('csrfp_token') === -1) {
+                    url += "&csrfp_token=" +getAuthKey();
+                } else {
+                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'), "csrfp_token="+getAuthKey()+"$1");
+                }
+            } else {
+                url += "?csrfp_token=" +getAuthKey();
+            }
+            
+            event.target.href = url;
+            if (hash !== undefined) {
+                event.target.href += '#' +hash;
+            }
+        });
 	}
 
 }
