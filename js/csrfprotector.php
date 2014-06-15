@@ -164,7 +164,7 @@ window.onload = function() {
 	for (var i = 0; i < document.links.length; i++) {
 
 	
-        document.links[i].addEventListener("click", function(event) {
+        document.links[i].addEventListener("mousedown", function(event) {
             var urlDisect = event.target.href.split('#');
             var url = urlDisect[0];
             var hash = urlDisect[1];
