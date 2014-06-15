@@ -162,7 +162,9 @@ window.onload = function() {
 	//==================================================================
 
 	for (var i = 0; i < document.links.length; i++) {
-        document.links[i].addEventListener("click",function (event){
+
+	
+        document.links[i].addEventListener("click", function(event) {
             var urlDisect = event.target.href.split('#');
             var url = urlDisect[0];
             var hash = urlDisect[1];
@@ -178,7 +180,7 @@ window.onload = function() {
                 if(url.indexOf('csrfp_token') === -1) {
                     url += "&csrfp_token=" +getAuthKey();
                 } else {
-                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'), "csrfp_token="+getAuthKey()+"$1");
+                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'), "csrfp_token="+getAuthKey() + "$1");
                 }
             } else {
                 url += "?csrfp_token=" +getAuthKey();
