@@ -67,6 +67,45 @@ var CSRFP = {
 		return /http(s)?:\/\/([^\/]+)/.exec(url)[2];
 	},
 	/**
+	 * Function to create and return a hidden input element
+	 * For stroing the CSRFP_TOKEN
+	 *
+	 * @param void
+	 * @return input element
+	 */
+	_getInputElt: function() {
+		var hiddenObj = document.createElement("input");
+		hiddenObj.name = 'csrfp_token';
+		hiddenObj.type = 'hidden';
+		hiddenObj.value = CSRFP._getAuthKey();
+		return hiddenObj;
+	},
+	/** 
+	 * Remove jcsrfp-token run fun and then put them back 
+	 *
+	 * @param function
+	 * @param reference form obj
+	 *
+	 * @retrun function
+	 */
+	_csrfpWrap: function(fun, obj) {
+		return function(event) {
+			// Remove CSRf token if exists
+			if (typeof obj.csrfp_token !== 'undefined') {
+				var target = obj.csrfp_token;
+				target.parentNode.removeChild(target);
+			}
+			
+			// Trigger the functions
+			var result = fun.apply(this, [event]);
+			
+			// Now append the csrftoken back
+			obj.appendChild(CSRFP._getInputElt());
+			
+			return result;
+		};
+	}
+	/**
 	 * Initialises the CSRFProtector js script
 	 *
 	 * @param void
@@ -98,18 +137,28 @@ window.onload = function() {
 	// Add for each POST, while for mentioned GET request
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
-		document.forms[i].onsubmit = function(event) {
+		document.forms[i].addEventListener("submit", function(event) {
 			if (typeof event.target.csrfp_token === 'undefined') {
-				var hiddenObj = document.createElement("input");
-				hiddenObj.name = 'csrfp_token';
-				hiddenObj.type = 'hidden';
-				hiddenObj.value = CSRFP._getAuthKey();
-				event.target.appendChild(hiddenObj);
+				event.target.appendChild(CSRFP._getInputElt());
 			} else {
 				//modify token to latest value
 				event.target.csrfp_token.value = CSRFP._getAuthKey();
 			}
-		};
+		});
+	}
+	
+	/**
+	 * Add wrapper for HTMLFormElements addEventListener so that any further 
+	 * addEventListens won't have trouble with CSRF token
+	 */
+	HTMLFormElement.prototype.addEventListener_ = HTMLFormElement.prototype.addEventListener;
+	HTMLFormElement.prototype.addEventListener = function(eventType, fun, bubble) {
+		if (eventType === 'submit') {
+			var wrapped = CSRFP._csrfpWrap(fun, this);
+			this.addEventListener_(eventType, wrapped, bubble);
+		} else {
+			this.addEventListener_(eventType, fun, bubble);
+		}	
 	}
 
 
