@@ -80,6 +80,29 @@ var CSRFP = {
 		hiddenObj.value = CSRFP._getAuthKey();
 		return hiddenObj;
 	},
+	/**
+	 * Returns absolute path for relative path
+	 * 
+	 * @param base, base url
+	 * @param relative, relative url
+	 *
+	 * @return absolute path (string)
+	 */
+	_getAbsolutePath: function(base, relative) {
+		var stack = base.split("/"),
+			parts = relative.split("/");
+		stack.pop(); // remove current file name (or empty string)
+					 // (omit if "base" is the current folder without trailing slash)
+		for (var i=0; i<parts.length; i++) {
+			if (parts[i] == ".")
+				continue;
+			if (parts[i] == "..")
+				stack.pop();
+			else
+				stack.push(parts[i]);
+		}
+		return stack.join("/");
+	},
 	/** 
 	 * Remove jcsrfp-token run fun and then put them back 
 	 *
@@ -104,7 +127,7 @@ var CSRFP = {
 			
 			return result;
 		};
-	}
+	},
 	/**
 	 * Initialises the CSRFProtector js script
 	 *
@@ -175,8 +198,14 @@ window.onload = function() {
 	 */
 	function new_open(method, url, async, username, password) {
 		this.method = method;
-
-		if (method.toLowerCase() === 'get' && !CSRFP._isValidGetRequest(url)) {
+		var isAbsolute = (url.indexOf("./") === -1) ? true:false;
+		if (!isAbsolute) {
+			var base = location.protocol +'//' +location.host 
+							+ location.pathname;
+			url = CSRFP._getAbsolutePath(base, url);
+		}
+		if (method.toLowerCase() === 'get' 
+			&& !CSRFP._isValidGetRequest(url)) {
 			//modify the url
 			if (url.indexOf('?') === -1) {
 				url += "?csrfp_token=" +CSRFP._getAuthKey();
