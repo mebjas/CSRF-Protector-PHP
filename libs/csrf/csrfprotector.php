@@ -10,6 +10,7 @@ class configFileNotFoundException extends \exception {};
 class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
 class logFileWriteError extends \exception {};
+class modCSRFProtectorEnabledException extends \exception {};
 
 class csrfProtector
 {
@@ -60,17 +61,27 @@ class csrfProtector
 	/**
 	 * function to initialise the csrfProtector work flow
 	 * @parameters: variables to override default configuration loaded from file
+	 *
 	 * @param $length - length of CSRF_AUTH_TOKEN to be generated
 	 * @param $action - int array, for different actions to be taken in case of failed validation
+	 *
 	 * @return void
+	 *
+	 * @throw modCSRFProtectorEnabledException
 	 * @throw configFileNotFoundException			
 	 */
 	public static function init($length = null, $action = null)
 	{
+		if (getenv('mod_csrfp_enabled')) {
+			throw new modCSRFProtectorEnabledException("mod_csrfprotector is already
+			enabled! you do not need multiple protection");
+			
+		}
+
 		//start session in case its not
 		if (session_id() == '') {
 		    session_start();
-		 }
+		}
 
 		if (!file_exists(__DIR__ ."/../config.php")) {
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
