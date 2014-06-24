@@ -144,7 +144,7 @@ class csrfProtector
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_POST]) 
 				&& isset($_COOKIE[self::$tokenName])
-				&& ($_GET[CSRFP_POST] === $_SESSION[elf::$tokenName])
+				&& ($_GET[CSRFP_POST] === $_SESSION[self::$tokenName])
 				)) {
 
 				//action in case of failed validation
