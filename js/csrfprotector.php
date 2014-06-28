@@ -1,9 +1,13 @@
 /** 
  * =================================================================
  * Javascript code for OWASP CSRF Protector
- * Task: Fetch csrftoken from cookie, and attach it to every
+ * Task it does: Fetch csrftoken from cookie, and attach it to every
  * 		POST request
  *		Allowed GET url
+ *			-- XHR
+ *			-- Static Forms
+ *			-- URLS (GET only)
+ *			-- dynamic forms
  * =================================================================
  */
 
@@ -28,7 +32,9 @@ var CSRFP = {
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
+	 *
 	 * @param: string, url
+	 *
 	 * @return: boolean, 	true if csrftoken is not needed
 	 * 						false if csrftoken is needed
 	 */
@@ -43,7 +49,9 @@ var CSRFP = {
 	},
 	/** 
 	 * function to get Auth key from cookie Andreturn it to requesting function
+	 *
 	 * @param: void
+	 *
 	 * @return: string, csrftoken retrieved from cookie
 	 */
 	_getAuthKey: function() {
@@ -51,18 +59,20 @@ var CSRFP = {
 		var RegExpArray = re.exec(document.cookie);
 		
 		if (RegExpArray === null) {
-			//#todo: Action to take if CSRFtoken not found
 			return false;
 		}
 		return RegExpArray[1];
 	},
 	/** 
 	 * Function to get domain of any url
+	 *
 	 * @param: string, url
+	 *
 	 * @return: string, domain of url
 	 */
 	_getDomain: function(url) {
-		if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0)
+		if (url.indexOf("http://") !== 0 
+			&& url.indexOf("https://") !== 0)
 			return document.domain;
 		return /http(s)?:\/\/([^\/]+)/.exec(url)[2];
 	},
@@ -71,6 +81,7 @@ var CSRFP = {
 	 * For stroing the CSRFP_TOKEN
 	 *
 	 * @param void
+	 *
 	 * @return input element
 	 */
 	_getInputElt: function() {
@@ -89,7 +100,7 @@ var CSRFP = {
 	 * @return absolute path (string)
 	 */
 	_getAbsolutePath: function(base, relative) {
-		var stack = base.split("/"),
+		var stack = base.split("/");
 		var parts = relative.split("/");
 		// remove current file name (or empty string)
 		// (omit if "base" is the current folder without trailing slash)
@@ -124,7 +135,7 @@ var CSRFP = {
 			// Trigger the functions
 			var result = fun.apply(this, [event]);
 			
-			// Now append the csrftoken back
+			// Now append the csrfp_token back
 			obj.appendChild(CSRFP._getInputElt());
 			
 			return result;
@@ -134,6 +145,7 @@ var CSRFP = {
 	 * Initialises the CSRFProtector js script
 	 *
 	 * @param void
+	 *
 	 * @return void
 	 */
 	_init: function() {
@@ -200,7 +212,7 @@ window.onload = function() {
 	 */
 	function new_open(method, url, async, username, password) {
 		this.method = method;
-		var isAbsolute = (url.indexOf("./") === -1) ? true:false;
+		var isAbsolute = (url.indexOf("./") === -1) ? true : false;
 		if (!isAbsolute) {
 			var base = location.protocol +'//' +location.host 
 							+ location.pathname;
@@ -222,16 +234,15 @@ window.onload = function() {
 	/** 
 	 * Wrapper to XHR send method
 	 * Add query paramter to XHR object
+	 *
 	 * @param: all parameters to XHR send method
+	 *
 	 * @return: object returned by default, XHR send method
 	 */
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
 			
-			//#needDiscussion: whats the utility, was used in paper by Riccardo
-			this.setRequestHeader("X-No-CSRF", "true");
-			
-			if (data !== undefined) {
+			if (typeof data !== undefined) {
 				data += "&";
 			} else {
 				data = "";
@@ -242,7 +253,7 @@ window.onload = function() {
 		return this.old_send(data);
 	}
 
-	//wrappig
+	// Wrapping
 	XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
 	XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
 	XMLHttpRequest.prototype.open = new_open;
@@ -265,7 +276,7 @@ window.onload = function() {
 			
             if(CSRFP._getDomain(url).indexOf(document.domain) === -1
 				|| CSRFP._isValidGetRequest(url)) {
-                //cross origin -- ignore or not to be protected by rules
+                //cross origin or not to be protected by rules -- ignore 
 				return;
             }
             
@@ -273,14 +284,15 @@ window.onload = function() {
                 if(url.indexOf('csrfp_token') === -1) {
                     url += "&csrfp_token=" +CSRFP._getAuthKey();
                 } else {
-                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'), "csrfp_token=" +CSRFP._getAuthKey() + "$1");
+                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'),
+						"csrfp_token=" +CSRFP._getAuthKey() + "$1");
                 }
             } else {
                 url += "?csrfp_token=" +CSRFP._getAuthKey();
             }
             
             event.target.href = url;
-            if (hash !== undefined) {
+            if (typeof hash !== undefined) {
                 event.target.href += '#' +hash;
             }
         });
