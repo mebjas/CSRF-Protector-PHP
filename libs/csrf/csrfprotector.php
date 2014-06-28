@@ -19,7 +19,7 @@ class csrfProtector
 	 * sent from client as post
 	 * @var string
 	 */
-	public static $tokenName = 'CSRF_AUTH_TOKEN';	//NOTE: DO NOT CHANGE THIS
+	public static $tokenName = 'csrfp_token';	//NOTE: DO NOT CHANGE THIS
 
 	/**
 	 * expiry time for cookie

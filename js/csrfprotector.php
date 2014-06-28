@@ -16,7 +16,7 @@ var CSRFP = {
 	 */
 	checkForUrls: [<?php
 		if (isset($_GET['param'])) {
-			$patternArray = json_decode($_GET['param'],false);
+			$patternArray = @json_decode($_GET['param'],false);
 			if ($patternArray) {
 				foreach ($patternArray as $key => $value) {
 					if ($key !== 0) echo ',';
@@ -47,7 +47,7 @@ var CSRFP = {
 	 * @return: string, csrftoken retrieved from cookie
 	 */
 	_getAuthKey: function() {
-		var re = new RegExp("CSRF_AUTH_TOKEN=([^;]+)(;|$)");
+		var re = new RegExp("csrfp_token=([^;]+)(;|$)");
 		var RegExpArray = re.exec(document.cookie);
 		
 		if (RegExpArray === null) {
@@ -90,10 +90,12 @@ var CSRFP = {
 	 */
 	_getAbsolutePath: function(base, relative) {
 		var stack = base.split("/"),
-			parts = relative.split("/");
-		stack.pop(); // remove current file name (or empty string)
-					 // (omit if "base" is the current folder without trailing slash)
-		for (var i=0; i<parts.length; i++) {
+		var parts = relative.split("/");
+		// remove current file name (or empty string)
+		// (omit if "base" is the current folder without trailing slash)
+		stack.pop(); 
+			 
+		for (var i = 0; i < parts.length; i++) {
 			if (parts[i] == ".")
 				continue;
 			if (parts[i] == "..")
