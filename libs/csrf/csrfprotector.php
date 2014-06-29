@@ -11,6 +11,7 @@ class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
 class logFileWriteError extends \exception {};
 class modCSRFProtectorEnabledException extends \exception {};
+class baseJSFileNotFoundExceptio extends \exception {};
 
 class csrfProtector
 {
@@ -109,6 +110,60 @@ class csrfProtector
 		if (!isset($_COOKIE[self::$tokenName])
 			|| !isset($_SESSION[self::$tokenName]))
 			self::refreshToken();
+	}
+
+	/**
+	 * Function to check weather to use cached version of js
+	 * 		file or not
+	 *
+	 * @param void
+	 *
+	 * @return, bool -- true if cacheversion can be used
+	 *					-- false otherwise
+	 */
+	public static function usedCachedVersion()
+	{
+		$configLastModified = filemtime(__DIR__ ."/../config.php");
+		if (file_exists(__DIR__ ."/../" .self::$config['jsFileRelative'])) {
+			$jsFileLastModified = filemtime(__DIR__ ."/../" 
+				.self::$config['jsFileRelative']);
+			if ($jsFileLastModified < $configLastModified) {
+				// -- config is more recent than js file
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+
+	/**
+	 * Function to create new cache version of js
+	 *
+	 * @param void
+	 *
+	 * @return void
+	 *
+	 * @throw baseJSFileNotFoundExceptio
+	 */
+	public static function createNewJsCache()
+	{
+		if (!file_exists(__DIR__ ."/csrfpJsFileBase.php")) {
+			throw new baseJSFileNotFoundExceptio("base js file needed to create js file not found at " .__DIR__);
+			return;;
+		}
+
+		$jsFile = file_get_contents(__DIR__ ."/csrfpJsFileBase.php");
+		$arrayStr = '';
+		if (self::$config['verifyGetFor']) {
+			foreach (self::$config['verifyGetFor'] as $key => $value) {
+				if ($key !== 0) $arrayStr .= ',';
+				$arrayStr .= "'". $value ."'";
+			}
+		}
+		$jsFile = str_replace('$$getAllowedUrls$$', $arrayStr, $jsFile);
+		file_put_contents(__DIR__ ."/../" .self::$config['jsFileRelative'], $jsFile);
 	}
 
 	/**
@@ -281,15 +336,6 @@ class csrfProtector
 	            return $buffer;
 	        }
 	    }
-		
-	    /*
-	    //you can add code to check if js file exists
-	    if (!file_exists(self::$config['jsFile'])) {
-	        $buffer = "CSRFProtector js file not found at " .self::$config['jsFile'] ." in " 
-	        .__FILE__ ." on line " .__LINE__;
-	        return $buffer;
-	    }
-	    */
 	    
 	    //add a <noscript> message to outgoing HTML output,
 	    //informing the user to enable js for CSRFProtector to work
@@ -297,9 +343,11 @@ class csrfProtector
 	    $buffer = preg_replace("/<body(.*)>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
 	    	"</noscript>", $buffer);
 
+	    if (!self::usedCachedVersion()) {
+	    	self::createNewJsCache();
+	    }
 
-	    $script = '<script type="text/javascript" src="' .self::$config['jsFile'] .'?param=' 
-	    	.urlencode(json_encode(self::$config['verifyGetFor'])) 
+	    $script = '<script type="text/javascript" src="' .self::$config['jsFileAbsolute']
 	    	.'"></script>';	
 
 	    //implant the CSRFGuard js file to outgoing script

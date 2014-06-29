@@ -18,17 +18,7 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: [<?php
-		if (isset($_GET['param'])) {
-			$patternArray = @json_decode($_GET['param'],false);
-			if ($patternArray) {
-				foreach ($patternArray as $key => $value) {
-					if ($key !== 0) echo ',';
-					echo "'". $value ."'";
-				}
-			}
-		}
-	?>],
+	checkForUrls: [$$getAllowedUrls$$],
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
