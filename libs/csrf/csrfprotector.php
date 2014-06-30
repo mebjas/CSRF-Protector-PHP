@@ -121,12 +121,12 @@ class csrfProtector
 	 * @return, bool -- true if cacheversion can be used
 	 *					-- false otherwise
 	 */
-	public static function usedCachedVersion()
+	public static function useCachedVersion()
 	{
 		$configLastModified = filemtime(__DIR__ ."/../config.php");
-		if (file_exists(__DIR__ ."/../" .self::$config['jsFileRelative'])) {
+		if (file_exists(__DIR__ ."/../" .self::$config['jsPath'])) {
 			$jsFileLastModified = filemtime(__DIR__ ."/../" 
-				.self::$config['jsFileRelative']);
+				.self::$config['jsPath']);
 			if ($jsFileLastModified < $configLastModified) {
 				// -- config is more recent than js file
 				return false;
@@ -163,7 +163,7 @@ class csrfProtector
 			}
 		}
 		$jsFile = str_replace('$$getAllowedUrls$$', $arrayStr, $jsFile);
-		file_put_contents(__DIR__ ."/../" .self::$config['jsFileRelative'], $jsFile);
+		file_put_contents(__DIR__ ."/../" .self::$config['jsPath'], $jsFile);
 	}
 
 	/**
@@ -343,12 +343,31 @@ class csrfProtector
 	    $buffer = preg_replace("/<body(.*)>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
 	    	"</noscript>", $buffer);
 
-	    if (!self::usedCachedVersion()) {
-	    	self::createNewJsCache();
+	    $arrayStr = '';
+	    if (!self::useCachedVersion()) {
+	    	try {
+	    		self::createNewJsCache();
+	    	} catch (exception $ex) {
+	    		if (self::$config['verifyGetFor']) {
+					foreach (self::$config['verifyGetFor'] as $key => $value) {
+						if ($key !== 0) $arrayStr .= ',';
+						$arrayStr .= "'". $value ."'";
+					}
+				}
+	    	}
 	    }
 
-	    $script = '<script type="text/javascript" src="' .self::$config['jsFileAbsolute']
-	    	.'"></script>';	
+	    $script = '<script type="text/javascript" src="' .self::$config['jsUrl']
+	    	.'"></script>' .PHP_EOL;
+
+	    $script .= '<script type="text/javascript">' .PHP_EOL;
+	    if ($arrayStr !== '') {
+	    	$script .= 'CSRFP.checkForUrls = [' .$arrayStr .'];' .PHP_EOL;
+	    }
+	    $script .= 'window.onload = function() {' .PHP_EOL;
+	    $script .= '	csrfprotector_init();' .PHP_EOL;
+	    $script .= '};' .PHP_EOL;
+	    $script .= '</script>' .PHP_EOL;
 
 	    //implant the CSRFGuard js file to outgoing script
 	    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
