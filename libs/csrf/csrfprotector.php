@@ -37,7 +37,7 @@ class csrfProtector
 	 * Varaible to store weather request type is post or get
 	 * @var string
 	 */
-	private static $requestType = "GET";
+	protected static $requestType = "GET";
 
 	/**
 	 * config file for CSRFProtector

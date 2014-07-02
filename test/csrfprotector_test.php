@@ -1,7 +1,25 @@
 <?php
 
-require __DIR__ .'/../libs/csrf/csrfprotector.php';
+require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
+/**
+ * Wrapper class for testing purpose
+ */
+class csrfP_wrapper extends csrfprotector
+{
+    /**
+     * Function to provide wrapper methode to set the protected var, requestType
+     */
+    public static function changeRequestType($type)
+    {
+        self::$requestType = $type;
+    }
+}
+
+
+/**
+ * main test class
+ */
 class csrfp_test extends PHPUnit_Framework_TestCase
 {
     /**
@@ -10,7 +28,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
-        $_SERVER['HTTP_HOST'] = $_SERVER['REQUEST_URI'] = 'temp';
+        $_SERVER['REQUEST_URI'] = 'temp';       // For logging
+        $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost
+        $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
+        $_SERVER['PHP_SELF'] = '/index.php';     // For authorisePost
+
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');    // For authorisePost
+        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
     }
 
     /**
@@ -42,6 +67,16 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         } else {
             $this->assertTrue(csrfprotector::useCachedVersion());
         }
+
+        $temp = csrfprotector::$config['jsPath'];
+        csrfprotector::$config['jsPath'] = 'some_random_name';
+        $this->assertFalse(csrfprotector::useCachedVersion());
+        csrfprotector::$config['jsPath'] = $temp;
+    }
+
+    public function testCreateNewJsCache()
+    {
+        $this->markTestSkipped('todo, some method to test this function');
     }
 
     /**
@@ -50,8 +85,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testAuthorisePost_logdirException()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         csrfprotector::$config['logDirectory'] = 'unknown_location';
 
         try {
@@ -69,13 +102,17 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 0;
+        csrfprotector::$config['failedAuthAction']['GET'] = 0;
 
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header');
+        $this->markTestSkipped('todo, add test to check header -- POST');
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header -- GET');
     }
 
     /**
@@ -85,14 +122,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 1;
+        csrfprotector::$config['failedAuthAction']['GET'] = 1;
 
         $_POST = array('param1' => 1, 'param2' => 2);
         csrfprotector::authorisePost();
         $this->assertEmpty($_POST);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
+        $_GET = array('param1' => 1, 'param2' => 2);
+
+        csrfprotector::authorisePost();
+        $this->assertEmpty($_GET);
     }
 
     /**
@@ -102,13 +145,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
-
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['errorRedirectionPage'] = 'http://test';
         csrfprotector::$config['failedAuthAction']['POST'] = 2;
 
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header');
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
         $this->markTestSkipped('todo, add test to check header');
     }
@@ -120,13 +165,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
-
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['customErrorMessage'] = 'custom error message';
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
 
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, code exits here, need to do it paralleley');
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
         $this->markTestSkipped('todo, code exits here, need to do it paralleley');
     }
@@ -138,12 +185,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
-
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 4;
 
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header');
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
         $this->markTestSkipped('todo, add test to check header');
     }
@@ -155,14 +204,19 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $_POST[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 10;
 
         $_POST = array('param1' => 1, 'param2' => 2);
         csrfprotector::authorisePost();
         $this->assertEmpty($_POST);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfP_wrapper::changeRequestType('GET');
+        $_GET = array('param1' => 1, 'param2' => 2);
+
+        csrfprotector::authorisePost();
+        $this->assertEmpty($_GET);
     }
     /**
      * test for generateAuthToken()
@@ -221,9 +275,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testisURLallowed()
     {
         csrfprotector::$config['verifyGetFor'] = array('http://test/delete*', 'https://test/*');
-
-        $_SERVER['REQUEST_SCHEME'] = 'http';
-        $_SERVER['HTTP_HOST'] = 'test';
 
         $_SERVER['PHP_SELF'] = '/nodelete.php';
         $this->assertTrue(csrfprotector::isURLallowed());
