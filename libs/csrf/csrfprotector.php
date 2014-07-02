@@ -249,9 +249,9 @@ class csrfProtector
 			default:
 				//unset the query parameters and forward
 				if (self::$requestType === 'GET') {
-					$_GET = [];
+					$_GET = array();
 				} else {
-					$_POST = [];
+					$_POST = array();
 				}
 				break;
 		}		
