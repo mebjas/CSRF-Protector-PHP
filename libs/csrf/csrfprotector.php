@@ -1,7 +1,7 @@
 <?php
 
 //name of HTTP POST variable for authentication
-define("CSRFP_POST","csrfp_token");
+define("CSRFP_TOKEN","csrfp_token");
 
 /**
  * child exception classes
@@ -15,13 +15,6 @@ class baseJSFileNotFoundExceptio extends \exception {};
 
 class csrfProtector
 {
-	/**
-	 * Name of the token sent to client as cookie and
-	 * sent from client as post
-	 * @var string
-	 */
-	public static $tokenName = 'csrfp_token';	//NOTE: DO NOT CHANGE THIS
-
 	/**
 	 * expiry time for cookie
 	 * @var int
@@ -107,8 +100,8 @@ class csrfProtector
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
 
-		if (!isset($_COOKIE[self::$tokenName])
-			|| !isset($_SESSION[self::$tokenName]))
+		if (!isset($_COOKIE[CSRFP_TOKEN])
+			|| !isset($_SESSION[CSRFP_TOKEN]))
 			self::refreshToken();
 	}
 
@@ -174,8 +167,7 @@ class csrfProtector
 	 */
 	public static function authorisePost()
 	{
-		//#todo this method is valid for same origin request only,
-		//#todo take required action if self::$config['isGETEnabled'] is true 
+		//#todo this method is valid for same origin request only, 
 		//enable it for cross origin also sometime
 		//for cross origin the functionality is different
 		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -184,9 +176,9 @@ class csrfProtector
 			self::$requestType = "POST";
 
 			//currently for same origin only
-			if (!(isset($_POST[CSRFP_POST]) 
-				&& isset($_SESSION[self::$tokenName])
-				&& ($_POST[CSRFP_POST] === $_SESSION[self::$tokenName])
+			if (!(isset($_POST[CSRFP_TOKEN]) 
+				&& isset($_SESSION[CSRFP_TOKEN])
+				&& ($_POST[CSRFP_TOKEN] === $_SESSION[CSRFP_TOKEN])
 				)) {
 
 				//action in case of failed validation
@@ -197,9 +189,9 @@ class csrfProtector
 		} else if (!static::isURLallowed()) {
 			
 			//currently for same origin only
-			if (!(isset($_GET[CSRFP_POST]) 
-				&& isset($_SESSION[self::$tokenName])
-				&& ($_GET[CSRFP_POST] === $_SESSION[self::$tokenName])
+			if (!(isset($_GET[CSRFP_TOKEN]) 
+				&& isset($_SESSION[CSRFP_TOKEN])
+				&& ($_GET[CSRFP_TOKEN] === $_SESSION[CSRFP_TOKEN])
 				)) {
 
 				//action in case of failed validation
@@ -275,13 +267,12 @@ class csrfProtector
 		$token = self::generateAuthToken();
 
 		//set token to session for server side validation
-		$_SESSION[self::$tokenName] = $token;
+		$_SESSION[CSRFP_TOKEN] = $token;
 
 		//set token to cookie for client side processing
-		setcookie(self::$tokenName, 
+		setcookie(CSRFP_TOKEN, 
 			$token, 
 			time() + self::$cookieExpiryTime);
-		//$_COOKIE[self::$tokenName] = $token;
 	}
 
 	/**
@@ -340,7 +331,7 @@ class csrfProtector
 	    //add a <noscript> message to outgoing HTML output,
 	    //informing the user to enable js for CSRFProtector to work
 	    //best section to add, after <body> tag
-	    $buffer = preg_replace("/<body(.*)>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
+	    $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
 	    	"</noscript>", $buffer);
 
 	    $arrayStr = '';
