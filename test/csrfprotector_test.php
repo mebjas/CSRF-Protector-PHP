@@ -9,7 +9,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-
+        csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
+        $_SERVER['HTTP_HOST'] = $_SERVER['REQUEST_URI'] = 'temp';
     }
 
     /**
@@ -32,6 +33,138 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * test useCachedVersion()
+     */
+    public function testUseCachedVersion()
+    {
+        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
+            $this->assertFalse(csrfprotector::useCachedVersion());
+        } else {
+            $this->assertTrue(csrfprotector::useCachedVersion());
+        }
+    }
+
+    /**
+     * test authorise post -> log directory exception
+     */
+    public function testAuthorisePost_logdirException()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        csrfprotector::$config['logDirectory'] = 'unknown_location';
+
+        try {
+            csrfprotector::authorisePost();
+        } catch (logDirectoryNotFoundException $ex) {
+            return;;
+        }
+        $this->fail('logDirectoryNotFoundException has not been raised.');
+    }
+
+    /**
+     * test authorise post -> action = 403, forbidden
+     */
+    public function testAuthorisePost_failedAction_1()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['failedAuthAction']['POST'] = 0;
+
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header');
+    }
+
+    /**
+     * test authorise post -> strip $_GET, $_POST
+     */
+    public function testAuthorisePost_failedAction_2()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['failedAuthAction']['POST'] = 1;
+
+        $_POST = array('param1' => 1, 'param2' => 2);
+        csrfprotector::authorisePost();
+        $this->assertEmpty($_POST);
+    }
+
+    /**
+     * test authorise post -> redirect
+     */
+    public function testAuthorisePost_failedAction_3()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['errorRedirectionPage'] = 'http://test';
+        csrfprotector::$config['failedAuthAction']['POST'] = 2;
+
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header');
+    }
+
+    /**
+     * test authorise post -> error message & exit
+     */
+    public function testAuthorisePost_failedAction_4()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['customErrorMessage'] = 'custom error message';
+        csrfprotector::$config['failedAuthAction']['POST'] = 3;
+
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, code exits here, need to do it paralleley');
+    }
+
+    /**
+     * test authorise post -> 501 internal server error
+     */
+    public function testAuthorisePost_failedAction_5()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['failedAuthAction']['POST'] = 4;
+
+        //csrfprotector::authorisePost();
+        $this->markTestSkipped('todo, add test to check header');
+    }
+
+    /**
+     * test authorise post -> default action: strip $_GET, $_POST
+     */
+    public function testAuthorisePost_failedAction_6()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+
+        $_POST[CSRFP_TOKEN] = '123';
+        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['failedAuthAction']['POST'] = 10;
+
+        $_POST = array('param1' => 1, 'param2' => 2);
+        csrfprotector::authorisePost();
+        $this->assertEmpty($_POST);
+    }
+    /**
      * test for generateAuthToken()
      */
     public function testGenerateAuthToken()
@@ -50,7 +183,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testob_handler()
     {
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
-        csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
         $testHTML = '<html>';
