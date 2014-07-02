@@ -4,6 +4,11 @@ php:
   - "5.4"
   - "5.3"
   - hhvm
+
+matrix:
+    allow_failures:
+    - php: hhvm
+
 before_script:
  - wget http://getcomposer.org/composer.phar
  - php composer.phar install --dev --no-interaction
