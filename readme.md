@@ -14,6 +14,8 @@ csrfProtector::init();
 ```
 simply include the library and call the `init()` function!
 
+For detailed information view [Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
+
 ###Contribute
 
 * Fork the repo
@@ -21,6 +23,8 @@ simply include the library and call the `init()` function!
 * Commit your changes
 * Create a pull request
 
+More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
+====================
 
 ##Join Discussions on mailing list
 [link to mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
