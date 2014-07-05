@@ -43,18 +43,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testRefreshToken()
     {
-        /*
+        
         $val = $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = '123abcd';
 
         
         csrfProtector::$config['tokenLength'] = 20;
-        //csrfProtector::refreshToken();
+        csrfProtector::refreshToken();
 
         $this->assertTrue(strcmp($val, $_SESSION[CSRFP_TOKEN]) != 0);
-        $this->assertTrue(strcmp($val, $_COOKIE[CSRFP_TOKEN]) != 0);
-        */
-
-        $this->markTestSkipped('This sets cookie header, causing error - headers already sent');
+        //#todo: Check cookie header too
     }
 
     /**
