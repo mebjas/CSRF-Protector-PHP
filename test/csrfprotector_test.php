@@ -97,6 +97,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $time1 = filemtime(__DIR__ ."/../js/csrfprotector.js");
 
+        csrfprotector::$config['verifyGetFor'] = $this->config['verifyGetFor'];
         csrfprotector::createNewJsCache();
 
         $time2 = filemtime(__DIR__ ."/../js/csrfprotector.js");
