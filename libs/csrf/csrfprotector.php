@@ -235,8 +235,8 @@ class csrfProtector
 				break;
 			case 2:
 				//redirect to custom error page
-				header("location: self::$config[errorRedirectionPage]");
-				exit;
+				$location  = self::$config['errorRedirectionPage'];
+				header("location: $location");
 			case 3:
 				//send custom error message
 				exit(self::$config['customErrorMessage']);

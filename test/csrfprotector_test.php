@@ -5,7 +5,7 @@ require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 /**
  * Wrapper class for testing purpose
  */
-class csrfP_wrapper extends csrfprotector
+class csrfp_wrapper extends csrfprotector
 {
     /**
      * Function to provide wrapper methode to set the protected var, requestType
@@ -13,6 +13,16 @@ class csrfP_wrapper extends csrfprotector
     public static function changeRequestType($type)
     {
         self::$requestType = $type;
+    }
+
+    public static function checkHeader($needle)
+    {
+        $haystack = xdebug_get_headers();
+        foreach ($haystack as $key => $value) {
+            if (strpos($value, $needle) !== false)
+                return true;
+        }
+        return false;
     }
 }
 
@@ -36,6 +46,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['verifyGetFor'] = array('http://test/index*');    // For authorisePost
         $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = '123';
         $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
     }
 
     /**
@@ -51,7 +62,9 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfProtector::refreshToken();
 
         $this->assertTrue(strcmp($val, $_SESSION[CSRFP_TOKEN]) != 0);
-        //#todo: Check cookie header too
+
+        $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
+        $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
     }
 
     /**
@@ -104,12 +117,13 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['GET'] = 0;
 
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header -- POST');
+        $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header -- GET');
+
+        $this->markTestSkipped('Cannot add tests as code exit here');
     }
 
     /**
@@ -128,7 +142,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertEmpty($_POST);
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         $_GET = array('param1' => 1, 'param2' => 2);
 
         csrfprotector::authorisePost();
@@ -145,14 +159,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['errorRedirectionPage'] = 'http://test';
         csrfprotector::$config['failedAuthAction']['POST'] = 2;
+        csrfprotector::$config['failedAuthAction']['GET'] = 2;
 
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header');
+        $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header');
+        $this->markTestSkipped('Cannot add tests as code exit here');
     }
 
     /**
@@ -165,18 +180,19 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['customErrorMessage'] = 'custom error message';
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
+        csrfprotector::$config['failedAuthAction']['POST'] = 3;
 
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, code exits here, need to do it paralleley');
+        $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, code exits here, need to do it paralleley');
+        $this->markTestSkipped('Cannot add tests as code exit here');
     }
 
     /**
-     * test authorise post -> 501 internal server error
+     * test authorise post -> 500 internal server error
      */
     public function testAuthorisePost_failedAction_5()
     {
@@ -184,14 +200,16 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 4;
+        csrfprotector::$config['failedAuthAction']['GET'] = 4;
 
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header');
+        //$this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         //csrfprotector::authorisePost();
-        $this->markTestSkipped('todo, add test to check header');
+        //csrfp_wrapper::checkHeader('500');
+        //$this->markTestSkipped('Cannot add tests as code exit here');
     }
 
     /**
@@ -203,13 +221,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 10;
+        csrfprotector::$config['failedAuthAction']['GET'] = 10;
 
         $_POST = array('param1' => 1, 'param2' => 2);
         csrfprotector::authorisePost();
         $this->assertEmpty($_POST);
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        csrfP_wrapper::changeRequestType('GET');
+        csrfp_wrapper::changeRequestType('GET');
         $_GET = array('param1' => 1, 'param2' => 2);
 
         csrfprotector::authorisePost();
