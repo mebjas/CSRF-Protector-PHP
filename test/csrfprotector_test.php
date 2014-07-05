@@ -33,6 +33,11 @@ class csrfp_wrapper extends csrfprotector
 class csrfp_test extends PHPUnit_Framework_TestCase
 {
     /**
+     * @var to hold current configurations
+     */
+    protected $config = array();
+
+    /**
      * Function to be run before every test*() functions.
      */
     public function setUp()
@@ -42,11 +47,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
         $_SERVER['PHP_SELF'] = '/index.php';     // For authorisePost
-
-        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');    // For authorisePost
         $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = '123';
         $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
+
+        $this->config = include(__DIR__ .'/../libs/config.php');
     }
 
     /**
@@ -65,6 +70,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));
     }
 
     /**
@@ -84,9 +90,19 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['jsPath'] = $temp;
     }
 
+    /**
+     * test for createNewJsCache()
+     */
     public function testCreateNewJsCache()
     {
-        $this->markTestSkipped('todo, some method to test this function');
+        $time1 = filemtime(__DIR__ ."/../js/csrfprotector.js");
+
+        csrfprotector::createNewJsCache();
+
+        $time2 = filemtime(__DIR__ ."/../js/csrfprotector.js");
+
+        //$this->assertTrue($time2 > $time1);
+        $this->markTestSkipped('Compare file last modified after calling function');
     }
 
     /**
@@ -100,6 +116,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         try {
             csrfprotector::authorisePost();
         } catch (logDirectoryNotFoundException $ex) {
+            $this->assertTrue(true);
             return;;
         }
         $this->fail('logDirectoryNotFoundException has not been raised.');
@@ -111,7 +128,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testAuthorisePost_failedAction_1()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['failedAuthAction']['POST'] = 0;
         csrfprotector::$config['failedAuthAction']['GET'] = 0;
@@ -134,6 +151,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['failedAuthAction']['POST'] = 1;
         csrfprotector::$config['failedAuthAction']['GET'] = 1;
 
@@ -157,6 +175,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['errorRedirectionPage'] = 'http://test';
         csrfprotector::$config['failedAuthAction']['POST'] = 2;
         csrfprotector::$config['failedAuthAction']['GET'] = 2;
@@ -178,6 +197,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['customErrorMessage'] = 'custom error message';
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
@@ -199,6 +219,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['failedAuthAction']['POST'] = 4;
         csrfprotector::$config['failedAuthAction']['GET'] = 4;
 
@@ -220,6 +241,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         csrfprotector::$config['logDirectory'] = '../log';
+        csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['failedAuthAction']['POST'] = 10;
         csrfprotector::$config['failedAuthAction']['GET'] = 10;
 
@@ -234,6 +256,25 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::authorisePost();
         $this->assertEmpty($_GET);
     }
+
+    /**
+     * test authorise success
+     */
+    public function testAuthorisePost_success()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = $_SESSION[CSRFP_TOKEN];
+        $temp = $_SESSION[CSRFP_TOKEN];
+
+        csrfprotector::authorisePost(); //will create new session and cookies
+
+        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));
+
+    }
+
     /**
      * test for generateAuthToken()
      */
@@ -245,6 +286,10 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($token1 == $token2);
         $this->assertEquals(strlen($token1), 20);
+
+        csrfprotector::$config['tokenLength'] = 128;
+        $token = csrfprotector::generateAuthToken();
+        $this->assertEquals(strlen($token), 128);
     }
 
     /**
@@ -270,11 +315,39 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         //Check if file has been modified
         $this->assertFalse($outLength == $inpLength);
+        $this->assertTrue(strpos($modifiedHTML, '<noscript>') !== false);
+        $this->assertTrue(strpos($modifiedHTML, '<script') !== false);
+    }
 
-        // Check if content after <body..> is <noscript #todo
-        $this->markTestSkipped('todo, add appropriate test here');
+    /**
+     * test ob_handler_function for output filter
+     */
+    public function testob_handler_positioning()
+    {
+        csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
+        csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
+
+        $testHTML = '<html>';
+        $testHTML .= '<head><title>1</title>';
+        $testHTML .= '<body onload="test()">';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '</body>';
+        $testHTML .= '</head></html>';
+
+        $modifiedHTML = csrfprotector::ob_handler($testHTML, 0);
+
+        $this->assertEquals(strpos($modifiedHTML, '<body') + 23, strpos($modifiedHTML, '<noscript'));
         // Check if content before </body> is </script> #todo
-        $this->markTestSkipped('todo, add appropriate test here');
+        //$this->markTestSkipped('todo, add appropriate test here');
+    }
+
+    /**
+     * testing exception in logging function
+     */
+    public function testgetCurrentUrl()
+    {
+        $this->markTestSkipped('Cannot test private methods');
     }
 
     /**
@@ -282,7 +355,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testLoggingException()
     {
-        $this->markTestSkipped('Should not test private methods');
+        $this->markTestSkipped('Cannot test private methods');
     }
 
     /**
