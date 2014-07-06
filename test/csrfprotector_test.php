@@ -404,11 +404,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testModCSRFPEnabledException()
     {
         putenv('mod_csrfp_enabled=true');
-        try {
-            csrfProtector::init();            
-        } catch (modCSRFProtectorEnabledException $ex) {
-            return;
-        }
-        $this->fail('modCSRFProtectorEnabledException has not been raised.');
+        $temp = $_SESSION['CSRFP_TOKEN'] = $_COOKIE[CSRFP_TOKEN];
+        csrfProtector::init();
+
+        // Assuming no cookie change
+        $this->assertTrue($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertTrue($temp == $_COOKIE[CSRFP_TOKEN]);
     }
 }
