@@ -272,8 +272,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
 
+        // For get method
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfp_wrapper::changeRequestType('GET');
+        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = $_SESSION[CSRFP_TOKEN];
+        $temp = $_SESSION[CSRFP_TOKEN];
+
+        csrfprotector::authorisePost(); //will create new session and cookies
+
+        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
     }
 
     /**
