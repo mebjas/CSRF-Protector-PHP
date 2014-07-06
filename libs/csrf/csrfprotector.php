@@ -10,7 +10,6 @@ class configFileNotFoundException extends \exception {};
 class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
 class logFileWriteError extends \exception {};
-class modCSRFProtectorEnabledException extends \exception {};
 class baseJSFileNotFoundExceptio extends \exception {};
 
 class csrfProtector
@@ -61,15 +60,16 @@ class csrfProtector
 	 *
 	 * @return void
 	 *
-	 * @throw modCSRFProtectorEnabledException
 	 * @throw configFileNotFoundException			
 	 */
 	public static function init($length = null, $action = null)
 	{
+		/**
+		 * if mod_csrfp already enabled, no verification, no filtering
+		 * Already done by mod_csrfp
+		 */
 		if (getenv('mod_csrfp_enabled')) {
-			throw new modCSRFProtectorEnabledException("mod_csrfprotector is already
-			enabled! you do not need multiple protection");
-			
+			return;			
 		}
 
 		//start session in case its not
