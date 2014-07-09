@@ -186,7 +186,7 @@ class csrfProtector
 			} else {
 				self::refreshToken();	//refresh token for successfull validation
 			}
-		} else if (!static::isURLallowed()) {
+		} else if (!static::isURLallowed(self::getCurrentUrl())) {
 			
 			//currently for same origin only
 			if (!(isset($_GET[CSRFP_TOKEN]) 
@@ -362,11 +362,74 @@ class csrfProtector
 
 	    //implant the CSRFGuard js file to outgoing script
 	    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
+
+	    // Perfor static rewriting on $buffer
+	    $buffer = self::rewriteHTML($buffer);
+
 	    if (!$count) {
 	        $buffer .= $script;
 	    }
 
 	    return $buffer;
+	}
+
+	/**
+	 * Function to perform static rewriting of forms and URLS
+	 * @param: $buffer, output buffer
+	 * @return: $buffer, modified buffer
+	 */
+	public static function rewriteHTML($buffer)
+	{
+		$token = $_COOKIE[CSRFP_TOKEN];
+
+		$count = preg_match_all("/<form(.*?)>(.*?)<\\/form>/is", $buffer, $matches, PREG_SET_ORDER);
+		if (is_array($matches)) {
+			foreach ($matches as $m) {	
+				$buffer = str_replace($m[0],
+				"<form{$m[1]}>
+				<input type='hidden' name='" .CSRFP_TOKEN ."' value='{$token}' />{$m[2]}</form>",
+				$buffer);
+			}
+		} 
+
+		// Rewrite, all urls using same logic href="--" href='--' href=-- ones
+		$count = preg_match_all('/<a\s+[^>]*href="([^"]+)"[^>]*>/is', $buffer, $matches1, PREG_SET_ORDER);
+		$count = preg_match_all('/<a\s+[^>]*href=\'([^"]+)\'[^>]*>/is', $buffer, $matches2, PREG_SET_ORDER);
+		$count = preg_match_all('/<a\s+[^>]*href=([^"\'][^> ]*)[^>]*>/is', $buffer, $matches3, PREG_SET_ORDER);
+		$matches = array_merge($matches1, $matches2, $matches3);
+
+		if (is_array($matches)) {
+			foreach ($matches as $m) {
+				// Check if url is allowed
+				if (self::isURLallowed($m[1]))
+					continue;
+
+				// Case -- need vaidation
+				// Check if this one needs the token
+				$buffer = str_replace($m[1], self::modifyURL($m[1], $token), $buffer);
+			}
+		}
+
+		return $buffer;
+
+	}
+
+	/**
+	 * Function to modify url & append CSRF token
+	 *
+	 * @param: $url to modify
+	 * @param: token to be added
+	 * @return: modified url
+	 */
+	public static function modifyURL($url, $token)
+	{
+		if (strpos($url, $token) !== false)
+			return $url;
+
+		if (strpos($url, '?') !== false) {
+			return $url .'/?' .CSRFP_TOKEN .'=' .$token;
+		}
+		return $url .'&' .CSRFP_TOKEN .'=' .$token;
 	}
 
 	/**
@@ -423,15 +486,15 @@ class csrfProtector
 	}
 
 	/**
-	 * Function to check if current url mataches for any urls
+	 * Function to check if a url mataches for any urls
 	 * Listed in config file
-	 * @param: void
+	 * @param: $url
 	 * @return: boolean, true is url need no validation, false if validation needed
 	 */ 
-	public static function isURLallowed() {
+	public static function isURLallowed($url) {
 		foreach (self::$config['verifyGetFor'] as $key => $value) {
 			$value = str_replace(array('/','*'), array('\/','(.*)'), $value);
-			preg_match('/' .$value .'/', self::getCurrentUrl(), $output);
+			preg_match('/' .$value .'/', $url, $output);
 			if (count($output) > 0) {
 				return false;
 			}
