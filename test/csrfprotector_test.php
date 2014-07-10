@@ -48,7 +48,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
         $_SERVER['PHP_SELF'] = '/index.php';     // For authorisePost
         $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
         $this->config = include(__DIR__ .'/../libs/config.php');
@@ -358,19 +358,23 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     /**
      * testing exception in logging function
      */
-    public function testgetCurrentUrl()
-    {
-        $this->markTestSkipped('Cannot test private methods');
-    }
-
-    /**
-     * testing exception in logging function
-     */
     public function testLoggingException()
     {
         $this->markTestSkipped('Cannot test private methods');
     }
 
+    /**
+     * Test getAbsoluteUrl function
+     */
+    public function testGetAbsoluteURL()
+    {
+        $this->assertSame('http://test/index.php', csrfprotector::getAbsoluteURL('http://test/index.php'));
+        $this->assertSame('http://test/delete.php', csrfprotector::getAbsoluteURL('./delete.php'));
+        $this->assertSame('http://delete.php', csrfprotector::getAbsoluteURL('../delete.php'));
+        $this->assertSame('http://test2/delete.php', csrfprotector::getAbsoluteURL('../test2/delete.php'));
+        $this->assertSame('http://test/test2/delete.php', csrfprotector::getAbsoluteURL('./test2/delete.php'));        
+    }
+    
     /**
      * Tests isUrlAllowed() function for various urls and configuration
      */
@@ -378,23 +382,16 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         csrfprotector::$config['verifyGetFor'] = array('http://test/delete*', 'https://test/*');
 
-        $_SERVER['PHP_SELF'] = '/nodelete.php';
-        $this->assertTrue(csrfprotector::isURLallowed());
+        $this->assertTrue(csrfprotector::isURLallowed('http"//test/nodelete.php'));
 
-        $_SERVER['PHP_SELF'] = '/index.php';
         $this->assertTrue(csrfprotector::isURLallowed('http://test/index.php'));
 
-        $_SERVER['PHP_SELF'] = '/delete.php';
         $this->assertFalse(csrfprotector::isURLallowed('http://test/delete.php'));
 
-        $_SERVER['PHP_SELF'] = '/delete_user.php';
         $this->assertFalse(csrfprotector::isURLallowed('http://test/delete_users.php'));
 
-        $_SERVER['REQUEST_SCHEME'] = 'https';
-        $_SERVER['PHP_SELF'] = '/index.php';
         $this->assertFalse(csrfprotector::isURLallowed('https://test/index.php'));
 
-        $_SERVER['PHP_SELF'] = '/delete_user.php';
         $this->assertFalse(csrfprotector::isURLallowed('https://test/delete_users.php'));
     }
 
