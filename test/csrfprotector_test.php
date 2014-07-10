@@ -47,10 +47,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
         $_SERVER['PHP_SELF'] = '/index.php';     // For authorisePost
-        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = '123';
-        $_SESSION[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = '123';
+        $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
+        csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         $this->config = include(__DIR__ .'/../libs/config.php');
     }
 
@@ -60,17 +61,17 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testRefreshToken()
     {
         
-        $val = $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = '123abcd';
+        $val = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = '123abcd';
 
         
         csrfProtector::$config['tokenLength'] = 20;
         csrfProtector::refreshToken();
 
-        $this->assertTrue(strcmp($val, $_SESSION[CSRFP_TOKEN]) != 0);
+        $this->assertTrue(strcmp($val, $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]) != 0);
 
         $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));
     }
 
     /**
@@ -264,28 +265,28 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testAuthorisePost_success()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = $_SESSION[CSRFP_TOKEN];
-        $temp = $_SESSION[CSRFP_TOKEN];
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
+        $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
         csrfprotector::authorisePost(); //will create new session and cookies
 
-        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));  // Combine these 3 later
 
         // For get method
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        $_POST[CSRFP_TOKEN] = $_GET[CSRFP_TOKEN] = $_SESSION[CSRFP_TOKEN];
-        $temp = $_SESSION[CSRFP_TOKEN];
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
+        $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
         csrfprotector::authorisePost(); //will create new session and cookies
 
-        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));  // Combine these 3 later
     }
 
     /**
@@ -404,11 +405,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testModCSRFPEnabledException()
     {
         putenv('mod_csrfp_enabled=true');
-        $temp = $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = 'abc';
+        $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
         csrfProtector::init();
 
         // Assuming no cookie change
-        $this->assertTrue($temp == $_SESSION[CSRFP_TOKEN]);
-        $this->assertTrue($temp == $_COOKIE[CSRFP_TOKEN]);
+        $this->assertTrue($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
+        $this->assertTrue($temp == $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']]);
     }
 }
