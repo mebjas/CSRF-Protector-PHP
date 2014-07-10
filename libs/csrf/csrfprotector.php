@@ -486,14 +486,48 @@ class csrfProtector
 	}
 
 	/**
+	 * Function to return absolute url, curresponding to current url
+	 * @param: $url, absolute or relative
+	 * @return: $url, absolute
+	 */
+	public static function getAbsoluteURL($url) {
+		if (strpos($url, '://') !== false)
+			return $url;
+
+		// Find the base url corresponding to current url
+		$currentURL = self::getCurrentUrl();
+		$arr = explode('/', $currentURL);
+		$arr[count($arr) - 1] = '';
+		$baseURL = implode('/', $arr);
+		
+		$stack = explode('/', $baseURL);
+		array_pop($stack); 	// Remove trailing '/'
+
+		$parts = explode('/', $url);
+		$len = count($parts);
+		
+		for($i = 0; $i < $len; $i++) {
+			if ($parts[$i] == '.') {
+				continue;
+			} else if ($parts[$i] === '..') {
+				array_pop($stack);
+			} else {
+				array_push($stack, $parts[$i]);
+			}
+		}
+		return implode('/', $stack);
+	}
+
+	/**
 	 * Function to check if a url mataches for any urls
 	 * Listed in config file
 	 * @param: $url
 	 * @return: boolean, true is url need no validation, false if validation needed
 	 */ 
 	public static function isURLallowed($url) {
+		$url = self::getAbsoluteURL($url);
 		foreach (self::$config['verifyGetFor'] as $key => $value) {
-			$value = str_replace(array('/','*'), array('\/','(.*)'), $value);
+			$value = str_replace(array('/','*'), array('\/','.*'), $value);
 			preg_match('/' .$value .'/', $url, $output);
 			if (count($output) > 0) {
 				return false;
