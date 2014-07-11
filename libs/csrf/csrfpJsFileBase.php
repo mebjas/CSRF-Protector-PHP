@@ -189,9 +189,24 @@ function csrfprotector_init() {
 		}	
 	}
 
+	/**
+	 * Add wrapper for IE's attachEvent
+	 */
+	if (typeof HTMLFormElement.prototype.attachEvent !== undefined) {
+		HTMLFormElement.prototype.attachEvent_ = HTMLFormElement.prototype.attachEvent;
+		HTMLFormElement.prototype.attachEvent = function(eventType, fun) {
+			if (eventType === 'submit') {
+				var wrapped = CSRFP._csrfpWrap(fun, this);
+				this.attachEvent_(eventType, wrapped);
+			} else {
+				this.attachEvent_(eventType, fun);
+			}
+		}
+	}
+
 
 	//==================================================================
-	// Wrapper for XMLHttpRequest
+	// Wrapper for XMLHttpRequest & ActiveXObject (for IE 6 & below)
 	// Set X-No-CSRF to true before sending if request method is 
 	//==================================================================
 
@@ -244,12 +259,19 @@ function csrfprotector_init() {
 		return this.old_send(data);
 	}
 
-	// Wrapping
-	XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
-	XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
-	XMLHttpRequest.prototype.open = new_open;
-	XMLHttpRequest.prototype.send = new_send;
-
+	if (window.XMLHttpRequest) {
+		// Wrapping
+		XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
+		XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
+		XMLHttpRequest.prototype.open = new_open;
+		XMLHttpRequest.prototype.send = new_send;
+	}
+	if (typeof ActiveXObject !== undefined) {
+		ActiveXObject.prototype.old_send = ActiveXObject.prototype.send;
+		ActiveXObject.prototype.old_open = ActiveXObject.prototype.open;
+		ActiveXObject.prototype.open = new_open;
+		ActiveXObject.prototype.send = new_send;	
+	}
 	//==================================================================
 	// Rewrite existing urls ( Attach CSRF token )
 	// Rules:
