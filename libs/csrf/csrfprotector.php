@@ -258,12 +258,23 @@ class csrfProtector
 	}
 
 	/**
-	 * function to set auth cookie 
+	 * Function to set auth cookie
+	 * Behavior: noJs disabled -- if cookie is set reuse it else set new one
+	 * noJs disabled -- refresh cookie for every passed validation, js will take
+	 *					care of rest on client side
 	 * @param: void
 	 * @return void
 	 */
 	public static function refreshToken()
 	{
+		if (self::$config['noJs'] && isset($_SESSION[CSRFP_TOKEN])) {
+			// Cookie is already set, just refresh it
+			setcookie(CSRFP_TOKEN,
+				$_SESSION[CSRFP_TOKEN],
+				time() + self::$cookieExpiryTime);
+			return;
+		}
+
 		$token = self::generateAuthToken();
 
 		//set token to session for server side validation
