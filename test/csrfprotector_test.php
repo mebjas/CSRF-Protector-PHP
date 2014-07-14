@@ -42,7 +42,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
+        $this->config = include(__DIR__ .'/../libs/config.php');
+
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
+        csrfprotector::$config['noJs'] = true;
+
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
@@ -51,7 +55,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
-        $this->config = include(__DIR__ .'/../libs/config.php');
+        
     }
 
     /**
