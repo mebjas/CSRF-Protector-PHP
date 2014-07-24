@@ -46,6 +46,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['noJs'] = true;
+        csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
 
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost

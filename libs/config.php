@@ -3,6 +3,7 @@
  * Configuration file for CSRF Protector z
  */
 return array(
+	"CSRFP_TOKEN" => "",
 	"noJs" => false,
 	"logDirectory" => "../log",
 	"failedAuthAction" => array(
