@@ -420,6 +420,43 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testRewriteHTML()
     {
-        
+        $_COOKIE[CSRFP_TOKEN] = 'abc';
+        $buffer = "<form action='./test'><input type='text' name='test'></form>";
+        $buffer = csrfprotector::rewriteHTML($buffer);
+        $this->assertTrue(strpos($buffer, "<input type='hidden' name='" .CSRFP_TOKEN) != false);
+
+        csrfprotector::$config['verifyGetFor'] = array("http://test/delete.php");
+        $buffer = "<a href='http://test/delete.php'></a>";
+        $buffer_ = csrfprotector::rewriteHTML($buffer);
+        $this->assertTrue(strpos($buffer_, "?" .CSRFP_TOKEN ."=" .$_COOKIE[CSRFP_TOKEN]) != false);
+
+        // No modification case
+        $buffer = "<a href='http://test/index.php'></a>";
+        $buffer_ = csrfprotector::rewriteHTML($buffer);
+        $this->assertSame($buffer, $buffer_);
+
+    }
+
+    /**
+     * function to test modifyURL()
+     */
+    public function testModifyURL()
+    {
+        $token = 'abcxxcd';
+
+        // Url already contains token
+        $url = 'http://test/test.php?csrfp_token=' .$token;
+        $url_ = csrfprotector::modifyURL($url, $token);
+        $this->assertSame($url, $url_);
+
+        // Url without argument
+        $url = 'http://test/test.php';
+        $url_ = csrfprotector::modifyURL($url, $token);
+        $this->assertTrue(strpos($url_, "?" .CSRFP_TOKEN ."=" .$token) != false);
+
+        // Url with argument
+        $url = 'http://test/test.php?a=1&b=2';
+        $url_ = csrfprotector::modifyURL($url, $token);
+        $this->assertTrue(strpos($url_, "&" .CSRFP_TOKEN ."=" .$token) != false);
     }
 }

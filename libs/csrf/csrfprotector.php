@@ -437,7 +437,7 @@ class csrfProtector
 		if (strpos($url, $token) !== false)
 			return $url;
 
-		if (strpos($url, '?') !== false) {
+		if (strpos($url, '?') == false) {
 			return $url .'/?' .CSRFP_TOKEN .'=' .$token;
 		}
 		return $url .'&' .CSRFP_TOKEN .'=' .$token;
