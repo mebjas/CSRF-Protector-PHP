@@ -70,7 +70,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfProtector::$config['tokenLength'] = 20;
         csrfProtector::refreshToken();
 
-        $this->assertTrue(strcmp($val, $_SESSION[CSRFP_TOKEN]) != 0);
+        // Token is not refreshed
+        $this->assertFalse(strcmp($val, $_SESSION[CSRFP_TOKEN]) != 0);
 
         $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
@@ -273,7 +274,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         csrfprotector::authorisePost(); //will create new session and cookies
 
-        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        // Token doesn't changes
+        $this->assertTrue($temp == $_SESSION[CSRFP_TOKEN]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
@@ -286,7 +288,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         csrfprotector::authorisePost(); //will create new session and cookies
 
-        $this->assertFalse($temp == $_SESSION[CSRFP_TOKEN]);
+        $this->assertTrue($temp == $_SESSION[CSRFP_TOKEN]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[CSRFP_TOKEN]));  // Combine these 3 later
@@ -411,5 +413,13 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         // Assuming no cookie change
         $this->assertTrue($temp == $_SESSION[CSRFP_TOKEN]);
         $this->assertTrue($temp == $_COOKIE[CSRFP_TOKEN]);
+    }
+
+    /**
+     * Test for rewriteHTML()
+     */
+    public function testRewriteHTML()
+    {
+        
     }
 }
