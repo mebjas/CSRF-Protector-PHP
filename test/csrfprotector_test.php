@@ -95,9 +95,9 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testUseCachedVersion()
     {
         if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
-            //$this->assertFalse(csrfprotector::useCachedVersion());
+            $this->assertFalse(csrfprotector::useCachedVersion());
         } else {
-            //$this->assertTrue(csrfprotector::useCachedVersion());
+            $this->assertTrue(csrfprotector::useCachedVersion());
         }
 
         $temp = csrfprotector::$config['jsPath'];
