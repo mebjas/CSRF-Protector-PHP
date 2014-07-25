@@ -56,7 +56,17 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SESSION[CSRFP_TOKEN] = $_COOKIE[CSRFP_TOKEN] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
-        
+        // Create an instance of config file -- for testing
+        $data = file_get_contents(__DIR__ .'/../libs/config.sample.php');
+        file_put_contents(__DIR__ .'/../libs/config.php', $data);      
+    }
+
+    /**
+     * tearDown()
+     */
+    public function tearDown()
+    {
+        unlink(__DIR__ .'/../libs/config.php');
     }
 
     /**
@@ -84,8 +94,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testUseCachedVersion()
     {
-        $this->markTestSkipped('Test requires config.php, however we have config.sample.php');
-        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.sample.php')) {
+        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
             //$this->assertFalse(csrfprotector::useCachedVersion());
         } else {
             //$this->assertTrue(csrfprotector::useCachedVersion());
@@ -318,8 +327,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler()
     {
-        $this->markTestSkipped('Test requires config.php, however we have config.sample.php');
-        return;
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
@@ -347,9 +354,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler_positioning()
     {
-        $this->markTestSkipped('Test requires config.php, however we have config.sample.php');
-        return;
-
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
