@@ -14,7 +14,8 @@ csrfProtector::init();
 ```
 simply include the library and call the `init()` function!
 
-For detailed information view [Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
+###Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
+
 
 ###Contribute
 
