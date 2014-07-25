@@ -53,6 +53,18 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
         $this->config = include(__DIR__ .'/../libs/config.sample.php');
+        
+        // Create an instance of config file -- for testing
+        $data = file_get_contents(__DIR__ .'/../libs/config.sample.php');
+        file_put_contents(__DIR__ .'/../libs/config.php', $data);      
+    }
+
+    /**
+     * tearDown()
+     */
+    public function tearDown()
+    {
+        unlink(__DIR__ .'/../libs/config.php');
     }
 
     /**
@@ -79,13 +91,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testUseCachedVersion()
     {
-        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.sample.php')) {
-            //$this->assertFalse(csrfprotector::useCachedVersion());
+        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
+            $this->assertFalse(csrfprotector::useCachedVersion());
         } else {
-            //$this->assertTrue(csrfprotector::useCachedVersion());
+            $this->assertTrue(csrfprotector::useCachedVersion());
         }
-        $this->markTestSkipped('Cant test as config.php doesn\'t exist by default');
-
+        
         $temp = csrfprotector::$config['jsPath'];
         csrfprotector::$config['jsPath'] = 'some_random_name';
         $this->assertFalse(csrfprotector::useCachedVersion());
@@ -312,8 +323,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler()
     {
-        $this->markTestSkipped('Config.php doesn\'t exist -- replaced with config.sample.php ');
-        return;
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
@@ -342,8 +351,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler_positioning()
     {
-        $this->markTestSkipped('Config.php doesn\'t exist -- replaced with config.sample.php ');
-        return;
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
