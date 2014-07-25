@@ -52,7 +52,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
-        $this->config = include(__DIR__ .'/../libs/config.php');
+        $this->config = include(__DIR__ .'/../libs/config.sample.php');
     }
 
     /**
@@ -79,7 +79,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testUseCachedVersion()
     {
-        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
+        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.sample.php')) {
             $this->assertFalse(csrfprotector::useCachedVersion());
         } else {
             $this->assertTrue(csrfprotector::useCachedVersion());
