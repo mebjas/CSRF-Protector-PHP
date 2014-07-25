@@ -15,7 +15,7 @@ csrfProtector::init();
 simply include the library and call the `init()` function!
 
 ###Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
-
+###More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
 
 ###Contribute
 
@@ -24,11 +24,10 @@ simply include the library and call the `init()` function!
 * Commit your changes
 * Create a pull request
 
-More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
-====================
 
-##Note
-This version (`master`) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our [nojs version](ps://github.com/mebjas/CSRF-Protector-PHP/blob/nojs-support)
+
+###Note
+This version (`master`) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our [nojs version](https://github.com/mebjas/CSRF-Protector-PHP/blob/nojs-support)
 
 ##Join Discussions on mailing list
 [link to mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
