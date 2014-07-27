@@ -215,7 +215,7 @@ function csrfprotector_init() {
 			if (url.indexOf('?') === -1) {
 				url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 			} else {
-				url += "&" CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+				url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 			}
 		}
 
