@@ -160,6 +160,7 @@ class csrfProtector
 				$arrayStr .= "'". $value ."'";
 			}
 		}
+		$jsFile = str_replace('$$tokenName$$', self::$config['CSRFP_TOKEN'], $jsFile);
 		$jsFile = str_replace('$$getAllowedUrls$$', $arrayStr, $jsFile);
 		file_put_contents(__DIR__ ."/../" .self::$config['jsPath'], $jsFile);
 	}

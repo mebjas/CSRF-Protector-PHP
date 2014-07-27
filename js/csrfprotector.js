@@ -12,6 +12,7 @@
  */
 
 var CSRFP = {
+	CSRFP_TOKEN: 'csrfp_token',
 	/**
 	 * Array of patterns of url, for which csrftoken need to be added
 	 * In case of GET request also, provided from server
@@ -45,7 +46,7 @@ var CSRFP = {
 	 * @return: string, csrftoken retrieved from cookie
 	 */
 	_getAuthKey: function() {
-		var re = new RegExp("csrfp_token=([^;]+)(;|$)");
+		var re = new RegExp(CSRFP.CSRFP_TOKEN +"=([^;]+)(;|$)");
 		var RegExpArray = re.exec(document.cookie);
 		
 		if (RegExpArray === null) {
@@ -76,7 +77,7 @@ var CSRFP = {
 	 */
 	_getInputElt: function() {
 		var hiddenObj = document.createElement("input");
-		hiddenObj.name = 'csrfp_token';
+		hiddenObj.name = CSRFP.CSRFP_TOKEN;
 		hiddenObj.type = 'hidden';
 		hiddenObj.value = CSRFP._getAuthKey();
 		return hiddenObj;
@@ -117,8 +118,8 @@ var CSRFP = {
 	_csrfpWrap: function(fun, obj) {
 		return function(event) {
 			// Remove CSRf token if exists
-			if (typeof obj.csrfp_token !== 'undefined') {
-				var target = obj.csrfp_token;
+			if (typeof obj[CSRFP.CSRFP_TOKEN] !== 'undefined') {
+				var target = obj[CSRFP.CSRFP_TOKEN];
 				target.parentNode.removeChild(target);
 			}
 			
@@ -165,11 +166,11 @@ function csrfprotector_init() {
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
 		document.forms[i].addEventListener("submit", function(event) {
-			if (typeof event.target.csrfp_token === 'undefined') {
+			if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
 				event.target.appendChild(CSRFP._getInputElt());
 			} else {
 				//modify token to latest value
-				event.target.csrfp_token.value = CSRFP._getAuthKey();
+				event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
 			}
 		});
 	}
@@ -212,9 +213,9 @@ function csrfprotector_init() {
 			&& !CSRFP._isValidGetRequest(url)) {
 			//modify the url
 			if (url.indexOf('?') === -1) {
-				url += "?csrfp_token=" +CSRFP._getAuthKey();
+				url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 			} else {
-				url += "&csrfp_token" +CSRFP._getAuthKey();
+				url += "&" CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 			}
 		}
 
@@ -232,13 +233,13 @@ function csrfprotector_init() {
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
 			
-			if (typeof data !== undefined) {
+			if (data !== "") {
 				data += "&";
 			} else {
 				data = "";
 			}
 			
-			data += "csrfp_token=" +CSRFP._getAuthKey();
+			data += CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 		}
 		return this.old_send(data);
 	}
@@ -271,18 +272,18 @@ function csrfprotector_init() {
             }
             
             if (url.indexOf('?') !== -1) {
-                if(url.indexOf('csrfp_token') === -1) {
-                    url += "&csrfp_token=" +CSRFP._getAuthKey();
+                if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
+                    url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
                 } else {
-                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'),
-						"csrfp_token=" +CSRFP._getAuthKey() + "$1");
+                    url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
+						CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
                 }
             } else {
-                url += "?csrfp_token=" +CSRFP._getAuthKey();
+                url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
             }
             
             event.target.href = url;
-            if (typeof hash !== undefined) {
+            if (typeof hash !== 'undefined') {
                 event.target.href += '#' +hash;
             }
         });
