@@ -297,7 +297,7 @@ function csrfprotector_init() {
                 if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
                     url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
                 } else {
-                    url = url.replace(new RegExp("csrfp_token=.*?(&|$)", 'g'),
+                    url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
 						CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
                 }
             } else {
