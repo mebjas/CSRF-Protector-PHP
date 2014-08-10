@@ -14,54 +14,64 @@ class baseJSFileNotFoundExceptio extends \exception {};
 
 class csrfProtector
 {
-	/**
+	/*
+	 * Variable: $cookieExpiryTime
 	 * expiry time for cookie
 	 * @var int
 	 */
 	public static $cookieExpiryTime = 1800;	//30 minutes
 
-	/**
+	/*
+	 * Variable: $isSameOrigin
 	 * flag for cross origin/same origin request
 	 * @var bool
 	 */
 	private static $isSameOrigin = true;
 
-	/**
+	/*
+	 * Variable: $isValidHTML
 	 * flag to check if output file is a valid HTML or not
 	 * @var bool
 	 */
 	private static $isValidHTML = false;
 
-	/**
+	/*
+	 * Variable: $requestType
 	 * Varaible to store weather request type is post or get
 	 * @var string
 	 */
 	protected static $requestType = "GET";
 
-	/**
+	/*
+	 * Variable: $config
 	 * config file for CSRFProtector
 	 * @var int Array, length = 6
-	 * @property #1: failedAuthAction (int) => action to be taken in case autherisation fails
-	 * @property #2: logDirectory (string) => directory in which log will be saved
-	 * @property #3: customErrorMessage (string) => custom error message to be sent in case
+	 * Property: #1: failedAuthAction (int) => action to be taken in case autherisation fails
+	 * Property: #2: logDirectory (string) => directory in which log will be saved
+	 * Property: #3: customErrorMessage (string) => custom error message to be sent in case
 	 *						of failed authentication
-	 * @property #4: jsFile (string) => location of the CSRFProtector js file
-	 * @property #5: tokenLength (int) => default length of hash
-	 * @property #6: disabledJavascriptMessage (string) => error message if client's js is disabled
+	 * Property: #4: jsFile (string) => location of the CSRFProtector js file
+	 * Property: #5: tokenLength (int) => default length of hash
+	 * Property: #6: disabledJavascriptMessage (string) => error message if client's js is disabled
 	 */
 	public static $config = array();
 
-	/**
-	 * function to initialise the csrfProtector work flow
-	 * @parameters: variables to override default configuration loaded from file
-	 *
-	 * @param $length - length of CSRF_AUTH_TOKEN to be generated
-	 * @param $action - int array, for different actions to be taken in case of failed validation
-	 *
-	 * @return void
-	 *
-	 * @throw configFileNotFoundException			
-	 */
+	/*
+		Function: init
+
+		function to initialise the csrfProtector work flow
+
+		Parameters:
+		$length - length of CSRF_AUTH_TOKEN to be generated
+		$action - int array, for different actions to be taken in case of failed validation
+
+		Returns:
+			void
+
+		Throws:
+			configFileNotFoundException - when configuration file is not found
+
+	*/
 	public static function init($length = null, $action = null)
 	{
 		/**
@@ -108,13 +118,16 @@ class csrfProtector
 			self::refreshToken();
 	}
 
-	/**
-	 * Function to check weather to use cached version of js
+	/*
+	 * Function: useCachedVersion
+	 * function to check weather to use cached version of js
 	 * 		file or not
 	 *
-	 * @param void
+	 * Parameters:
+	 *  void
 	 *
-	 * @return, bool -- true if cacheversion can be used
+	 * Returns:
+	 * bool -- true if cacheversion can be used
 	 *					-- false otherwise
 	 */
 	public static function useCachedVersion()
@@ -134,14 +147,18 @@ class csrfProtector
 		
 	}
 
-	/**
+	/*
+	 * Function: createNewJsCache
 	 * Function to create new cache version of js
 	 *
-	 * @param void
+	 * Parameters:
+	 * void
 	 *
-	 * @return void
+	 * Returns:
+	 * void
 	 *
-	 * @throw baseJSFileNotFoundExceptio
+	 * Throws:
+	 * baseJSFileNotFoundExceptio - if baseJsFile is not found
 	 */
 	public static function createNewJsCache()
 	{
@@ -163,11 +180,18 @@ class csrfProtector
 		file_put_contents(__DIR__ ."/../" .self::$config['jsPath'], $jsFile);
 	}
 
-	/**
+	/*
+	 * Function: authorisePost
 	 * function to authorise incoming post requests
-	 * @param void
-	 * @return void
-	 * @throw logDirectoryNotFoundException
+	 *
+	 * Parameters: 
+	 * void
+	 *
+	 * Returns: 
+	 * void
+	 *
+	 * Throws: 
+	 * logDirectoryNotFoundException - if log directory is not found
 	 */
 	public static function authorisePost()
 	{
@@ -206,11 +230,16 @@ class csrfProtector
 		}	
 	}
 
-	/**
+	/*
+	 * Function: failedValidationAction
 	 * function to be called in case of failed validation
 	 * performs logging and take appropriate action
-	 * @param: void
-	 * @return: void
+	 *
+	 * Parameters: 
+	 * void
+	 *
+	 * Returns: 
+	 * void
 	 */
 	private static function failedValidationAction()
 	{
@@ -261,10 +290,15 @@ class csrfProtector
 		}		
 	}
 
-	/**
-	 * function to set auth cookie 
-	 * @param: void
-	 * @return void
+	/*
+	 * Function: refreshToken
+	 * Function to set auth cookie
+	 *
+	 * Parameters: 
+	 * void
+	 *
+	 * Returns: 
+	 * void
 	 */
 	public static function refreshToken()
 	{
@@ -279,11 +313,16 @@ class csrfProtector
 			time() + self::$cookieExpiryTime);
 	}
 
-	/**
+	/*
+	 * Function: generateAuthToken
 	 * function to generate random hash of length as given in parameter
 	 * max length = 128
-	 * @param: length to hash required, int
-	 * @return string
+	 *
+	 * Parameters: 
+	 * length to hash required, int
+	 *
+	 * Returns:
+	 * string, token
 	 */
 	public static function generateAuthToken()
 	{
@@ -311,12 +350,17 @@ class csrfProtector
 		return substr($token, 0, self::$config['tokenLength']);
 	}
 
-	/**
+	/*
+	 * Function: ob_handler
 	 * Rewrites <form> on the fly to add CSRF tokens to them. This can also
 	 * inject our JavaScript library.
-	 * @param: $buffer, output buffer to which all output are stored
-	 * @param: flag
-	 * @return string, complete output buffer
+	 *
+	 * Parameters: 
+	 * $buffer - output buffer to which all output are stored
+	 * $flag - INT
+	 *
+	 * Return:
+	 * string, complete output buffer
 	 */
 	public static function ob_handler($buffer, $flags)
 	{
@@ -373,11 +417,18 @@ class csrfProtector
 	    return $buffer;
 	}
 
-	/**
+	/*
+	 * Function: logCSRFattack
 	 * Functio to log CSRF Attack
-	 * @param: void
-	 * @retrun: void
-	 * @throw: logFileWriteError
+	 * 
+	 * Parameters: 
+	 * void
+	 *
+	 * Retruns: 
+	 * void
+	 *
+	 * Throws: 
+	 * logFileWriteError - if unable to log an attack
 	 */
 	private static function logCSRFattack()
 	{
@@ -415,10 +466,15 @@ class csrfProtector
 		fclose($logFile);
 	}
 
-	/**
+	/*
+	 * Function: getCurrentUrl
 	 * Function to return current url of executing page
-	 * @param: void
-	 * @return: string, current url
+	 * 
+	 * Parameters: 
+	 * void
+	 *
+	 * Returns: 
+	 * string - current url
 	 */
 	private static function getCurrentUrl()
 	{
@@ -426,12 +482,17 @@ class csrfProtector
 			.$_SERVER['HTTP_HOST'] .$_SERVER['PHP_SELF'];
 	}
 
-	/**
-	 * Function to check if current url mataches for any urls
+	/*
+	 * Function: isURLallowed
+	 * Function to check if a url mataches for any urls
 	 * Listed in config file
-	 * @param: void
-	 * @return: boolean, true is url need no validation, false if validation needed
-	 */ 
+	 *
+	 * Parameters: 
+	 * void
+	 *
+	 * Returns: 
+	 * boolean - true is url need no validation, false if validation needed
+	 */  
 	public static function isURLallowed() {
 		foreach (self::$config['verifyGetFor'] as $key => $value) {
 			$value = str_replace(array('/','*'), array('\/','(.*)'), $value);
