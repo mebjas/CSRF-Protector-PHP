@@ -78,31 +78,26 @@ class csrfProtector
 		 * if mod_csrfp already enabled, no verification, no filtering
 		 * Already done by mod_csrfp
 		 */
-		if (getenv('mod_csrfp_enabled')) {
-			return;			
-		}
+		if (getenv('mod_csrfp_enabled'))
+			return;
 
 		//start session in case its not
-		if (session_id() == '') {
+		if (session_id() == '')
 		    session_start();
-		}
 
-		if (!file_exists(__DIR__ ."/../config.php")) {
+		if (!file_exists(__DIR__ ."/../config.php"))
 			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
-		}
 
 		//load configuration file and properties
 		self::$config = include(__DIR__ ."/../config.php");
 
 		//overriding length property if passed in parameters
-		if ($length !== null) {
+		if ($length !== null)
 			self::$config['tokenLength'] = intval($length);
-		}
 		
 		//action that is needed to be taken in case of failed authorisation
-		if ($action !== null) {
+		if ($action !== null)
 			self::$config['failedAuthAction'] = $action;
-		}
 
 		if (self::$config['CSRFP_TOKEN'] == '')
 			self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;	
@@ -141,9 +136,8 @@ class csrfProtector
 				return false;
 			}
 			return true;
-		} else {
+		} else
 			return false;
-		}
 		
 	}
 
@@ -164,7 +158,7 @@ class csrfProtector
 	{
 		if (!file_exists(__DIR__ ."/csrfpJsFileBase.php")) {
 			throw new baseJSFileNotFoundExceptio("base js file needed to create js file not found at " .__DIR__);
-			return;;
+			return;
 		}
 
 		$jsFile = file_get_contents(__DIR__ ."/csrfpJsFileBase.php");
@@ -243,9 +237,8 @@ class csrfProtector
 	 */
 	private static function failedValidationAction()
 	{
-		if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory'])) {
-			throw new logDirectoryNotFoundException("Log Directory Not Found!");		
-		}
+		if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory']))
+			throw new logDirectoryNotFoundException("Log Directory Not Found!");
 	
 		//call the logging function
 		static::logCSRFattack();
@@ -371,9 +364,8 @@ class csrfProtector
 	        // not HTML until proven otherwise
 	        if (stripos($buffer, '<html') !== false) {
 	            self::$isValidHTML = true;
-	        } else {
+	        } else
 	            return $buffer;
-	        }
 	    }
 	    
 	    //add a <noscript> message to outgoing HTML output,
@@ -410,9 +402,8 @@ class csrfProtector
 
 	    //implant the CSRFGuard js file to outgoing script
 	    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
-	    if (!$count) {
+	    if (!$count)
 	        $buffer .= $script;
-	    }
 
 	    return $buffer;
 	}
@@ -437,9 +428,8 @@ class csrfProtector
 		."/" .date("m-20y") .".log", "a+");
 		
 		//throw exception if above fopen fails
-		if (!$logFile) {
+		if (!$logFile)
 			throw new logFileWriteError("Unable to write to the log file");	
-		}
 
 		//miniature version of the log
 		$log = array();
@@ -448,11 +438,10 @@ class csrfProtector
 		$log['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
 		$log['requestType'] = self::$requestType;
 
-		if (self::$requestType === "GET") {
+		if (self::$requestType === "GET")
 			$log['query'] = $_GET;
-		} else {
+		else
 			$log['query'] = $_POST;
-		}
 
 		$log['cookie'] = $_COOKIE;
 
@@ -497,9 +486,8 @@ class csrfProtector
 		foreach (self::$config['verifyGetFor'] as $key => $value) {
 			$value = str_replace(array('/','*'), array('\/','(.*)'), $value);
 			preg_match('/' .$value .'/', self::getCurrentUrl(), $output);
-			if (count($output) > 0) {
+			if (count($output) > 0)
 				return false;
-			}
 		}
 		return true;
 	}
