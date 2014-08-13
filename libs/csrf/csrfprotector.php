@@ -103,7 +103,7 @@ class csrfProtector
 			self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;	
 
 		//authorise the incoming request
-		self::authorisePost();
+		self::authorizePost();
 
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
@@ -175,7 +175,7 @@ class csrfProtector
 	}
 
 	/*
-	 * Function: authorisePost
+	 * Function: authorizePost
 	 * function to authorise incoming post requests
 	 *
 	 * Parameters: 
@@ -187,7 +187,7 @@ class csrfProtector
 	 * Throws: 
 	 * logDirectoryNotFoundException - if log directory is not found
 	 */
-	public static function authorisePost()
+	public static function authorizePost()
 	{
 		//#todo this method is valid for same origin request only, 
 		//enable it for cross origin also sometime
