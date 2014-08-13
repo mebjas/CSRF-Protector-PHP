@@ -92,11 +92,11 @@ class csrfProtector
 		self::$config = include(__DIR__ ."/../config.php");
 
 		//overriding length property if passed in parameters
-		if ($length !== null)
+		if ($length != null)
 			self::$config['tokenLength'] = intval($length);
 		
 		//action that is needed to be taken in case of failed authorisation
-		if ($action !== null)
+		if ($action != null)
 			self::$config['failedAuthAction'] = $action;
 
 		if (self::$config['CSRFP_TOKEN'] == '')
@@ -165,7 +165,7 @@ class csrfProtector
 		$arrayStr = '';
 		if (self::$config['verifyGetFor']) {
 			foreach (self::$config['verifyGetFor'] as $key => $value) {
-				if ($key !== 0) $arrayStr .= ',';
+				if ($key != 0) $arrayStr .= ',';
 				$arrayStr .= "'". $value ."'";
 			}
 		}
@@ -320,7 +320,7 @@ class csrfProtector
 	public static function generateAuthToken()
 	{
 		//if config tokenLength value is 0 or some non int
-		if (intval(self::$config['tokenLength']) === 0) {
+		if (intval(self::$config['tokenLength']) == 0) {
 			self::$config['tokenLength'] = 32;	//set as default
 		}
 
@@ -362,7 +362,7 @@ class csrfProtector
 	    // we hit the first <html tag.
 	    if (!self::$isValidHTML) {
 	        // not HTML until proven otherwise
-	        if (stripos($buffer, '<html') !== false) {
+	        if (stripos($buffer, '<html') != false) {
 	            self::$isValidHTML = true;
 	        } else
 	            return $buffer;
@@ -381,7 +381,7 @@ class csrfProtector
 	    	} catch (exception $ex) {
 	    		if (self::$config['verifyGetFor']) {
 					foreach (self::$config['verifyGetFor'] as $key => $value) {
-						if ($key !== 0) $arrayStr .= ',';
+						if ($key != 0) $arrayStr .= ',';
 						$arrayStr .= "'". $value ."'";
 					}
 				}
