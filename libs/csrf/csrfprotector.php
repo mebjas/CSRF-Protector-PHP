@@ -362,10 +362,11 @@ class csrfProtector
 	    // we hit the first <html tag.
 	    if (!self::$isValidHTML) {
 	        // not HTML until proven otherwise
-	        if (stripos($buffer, '<html') != false) {
-	            self::$isValidHTML = true;
-	        } else
+	        if (stripos($buffer, '<html') !== false) {
+	            self::$isValidHTML = true; 
+	        } else {
 	            return $buffer;
+	        }
 	    }
 	    
 	    //add a <noscript> message to outgoing HTML output,

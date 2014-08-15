@@ -44,10 +44,13 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
+
+
+
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
-        $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorisePost
+        $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorizePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
-        $_SERVER['PHP_SELF'] = '/index.php';     // For authorisePost
+        $_SERVER['PHP_SELF'] = '/index.php';     // For authorizePost
         $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = '123';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = 'abc'; //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
@@ -128,7 +131,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['logDirectory'] = 'unknown_location';
 
         try {
-            csrfprotector::authorisePost();
+            csrfprotector::authorizePost();
         } catch (logDirectoryNotFoundException $ex) {
             $this->assertTrue(true);
             return;;
@@ -147,12 +150,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['POST'] = 0;
         csrfprotector::$config['failedAuthAction']['GET'] = 0;
 
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
 
         $this->markTestSkipped('Cannot add tests as code exit here');
     }
@@ -170,14 +173,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['GET'] = 1;
 
         $_POST = array('param1' => 1, 'param2' => 2);
-        csrfprotector::authorisePost();
+        csrfprotector::authorizePost();
         $this->assertEmpty($_POST);
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
         $_GET = array('param1' => 1, 'param2' => 2);
 
-        csrfprotector::authorisePost();
+        csrfprotector::authorizePost();
         $this->assertEmpty($_GET);
     }
 
@@ -194,12 +197,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['POST'] = 2;
         csrfprotector::$config['failedAuthAction']['GET'] = 2;
 
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         $this->markTestSkipped('Cannot add tests as code exit here');
     }
 
@@ -216,12 +219,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
         csrfprotector::$config['failedAuthAction']['POST'] = 3;
 
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         $this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         $this->markTestSkipped('Cannot add tests as code exit here');
     }
 
@@ -237,12 +240,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['POST'] = 4;
         csrfprotector::$config['failedAuthAction']['GET'] = 4;
 
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         //$this->markTestSkipped('Cannot add tests as code exit here');
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        //csrfprotector::authorisePost();
+        //csrfprotector::authorizePost();
         //csrfp_wrapper::checkHeader('500');
         //$this->markTestSkipped('Cannot add tests as code exit here');
     }
@@ -260,14 +263,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['failedAuthAction']['GET'] = 10;
 
         $_POST = array('param1' => 1, 'param2' => 2);
-        csrfprotector::authorisePost();
+        csrfprotector::authorizePost();
         $this->assertEmpty($_POST);
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
         $_GET = array('param1' => 1, 'param2' => 2);
 
-        csrfprotector::authorisePost();
+        csrfprotector::authorizePost();
         $this->assertEmpty($_GET);
     }
 
@@ -280,7 +283,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
-        csrfprotector::authorisePost(); //will create new session and cookies
+        csrfprotector::authorizePost(); //will create new session and cookies
 
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
@@ -293,7 +296,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
-        csrfprotector::authorisePost(); //will create new session and cookies
+        csrfprotector::authorizePost(); //will create new session and cookies
 
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
@@ -335,7 +338,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $testHTML .= '</head></html>';
 
         $modifiedHTML = csrfprotector::ob_handler($testHTML, 0);
-
         $inpLength = strlen($testHTML);
         $outLength = strlen($modifiedHTML);
 
