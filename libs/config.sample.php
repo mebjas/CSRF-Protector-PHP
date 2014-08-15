@@ -1,6 +1,12 @@
 <?php
 /**
- * Configuration file for CSRF Protector z
+ * Configuration file for CSRF Protector
+ * Necessary configurations are (library would throw exception otherwise)
+ * ---- logDirectory
+ * ---- failedAuthAction
+ * ---- jsPath
+ * ---- jsUrl
+ * ---- tokenLength
  */
 return array(
 	"CSRFP_TOKEN" => "",

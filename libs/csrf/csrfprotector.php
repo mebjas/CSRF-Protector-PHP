@@ -11,6 +11,7 @@ class logDirectoryNotFoundException extends \exception {};
 class jsFileNotFoundException extends \exception {};
 class logFileWriteError extends \exception {};
 class baseJSFileNotFoundExceptio extends \exception {};
+class incompleteConfigurationException extends \exception {};
 
 class csrfProtector
 {
@@ -57,24 +58,33 @@ class csrfProtector
 	public static $config = array();
 
 	/*
-		Function: init
-
-		function to initialise the csrfProtector work flow
-
-		Parameters:
-		$length - length of CSRF_AUTH_TOKEN to be generated
-		$action - int array, for different actions to be taken in case of failed validation
-
-		Returns:
-			void
-
-		Throws:
-			configFileNotFoundException - when configuration file is not found
-
-	*/
+	 * Variable: $requiredConfigurations
+	 * Contains list of those parameters that are required to be there
+	 * 	in config file for csrfp to work
+	 */
+	public static $requiredConfigurations  = array('logDirectory', 'failedAuthAction', 'jsPath', 'jsUrl', 'tokenLength');
+	
+	/*
+	 *	Function: init
+ 	 *
+	 *	function to initialise the csrfProtector work flow
+	 *
+	 *	Parameters:
+	 *	$length - length of CSRF_AUTH_TOKEN to be generated
+	 *	$action - int array, for different actions to be taken in case of failed validation
+	 *
+	 *	Returns:
+	 *		void
+	 *
+	 *	Throws:
+	 *		configFileNotFoundException - when configuration file is not found
+	 * 		incompleteConfigurationException - when all required fields in config
+	 *											file are not available
+	 *
+	 */
 	public static function init($length = null, $action = null)
 	{
-		/**
+		/*
 		 * if mod_csrfp already enabled, no verification, no filtering
 		 * Already done by mod_csrfp
 		 */
@@ -86,7 +96,7 @@ class csrfProtector
 		    session_start();
 
 		if (!file_exists(__DIR__ ."/../config.php"))
-			throw new configFileNotFoundException("configuration file not found for CSRFProtector!");	
+			throw new configFileNotFoundException("OWASP CSRFProtector: configuration file not found for CSRFProtector!");	
 
 		//load configuration file and properties
 		self::$config = include(__DIR__ ."/../config.php");
@@ -100,9 +110,17 @@ class csrfProtector
 			self::$config['failedAuthAction'] = $action;
 
 		if (self::$config['CSRFP_TOKEN'] == '')
-			self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;	
+			self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
 
-		//authorise the incoming request
+		// Validate the config if everythings filled out
+		foreach (self::$requiredConfigurations as $value) {
+			if (!isset(self::$config[$value]) || !self::$config[$value] == '') {
+				throw new incompleteConfigurationException("OWASP CSRFProtector: Incomplete configuration file!");
+				exit;
+			}
+		}
+
+		// Authorise the incoming request
 		self::authorizePost();
 
 		// Initialize output buffering handler
@@ -157,7 +175,7 @@ class csrfProtector
 	public static function createNewJsCache()
 	{
 		if (!file_exists(__DIR__ ."/csrfpJsFileBase.php")) {
-			throw new baseJSFileNotFoundExceptio("base js file needed to create js file not found at " .__DIR__);
+			throw new baseJSFileNotFoundExceptio("OWASP CSRFProtector: base js file needed to create js file not found at " .__DIR__);
 			return;
 		}
 
@@ -238,7 +256,7 @@ class csrfProtector
 	private static function failedValidationAction()
 	{
 		if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory']))
-			throw new logDirectoryNotFoundException("Log Directory Not Found!");
+			throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
 	
 		//call the logging function
 		static::logCSRFattack();
@@ -430,7 +448,7 @@ class csrfProtector
 		
 		//throw exception if above fopen fails
 		if (!$logFile)
-			throw new logFileWriteError("Unable to write to the log file");	
+			throw new logFileWriteError("OWASP CSRFProtector: Unable to write to the log file");	
 
 		//miniature version of the log
 		$log = array();
