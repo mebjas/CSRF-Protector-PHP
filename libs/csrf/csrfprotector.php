@@ -114,7 +114,7 @@ class csrfProtector
 
 		// Validate the config if everythings filled out
 		foreach (self::$requiredConfigurations as $value) {
-			if (!isset(self::$config[$value]) || !self::$config[$value] == '') {
+			if (!isset(self::$config[$value]) || self::$config[$value] == '') {
 				throw new incompleteConfigurationException("OWASP CSRFProtector: Incomplete configuration file!");
 				exit;
 			}
