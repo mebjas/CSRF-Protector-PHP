@@ -44,6 +44,13 @@ class csrfProtector
 	protected static $requestType = "GET";
 
 	/*
+	 * Variable: tokenExpiryTime
+	 * time after which the token shall expire if not the last
+	 * set token
+	 */
+	private static $tokenExpiryTime = 60;	// 60 seconds
+
+	/*
 	 * Variable: $config
 	 * config file for CSRFProtector
 	 * @var int Array, length = 6
@@ -114,7 +121,7 @@ class csrfProtector
 
 		// Validate the config if everythings filled out
 		foreach (self::$requiredConfigurations as $value) {
-			if (!isset(self::$config[$value]) || !self::$config[$value] == '') {
+			if (!isset(self::$config[$value]) || self::$config[$value] == '') {
 				throw new incompleteConfigurationException("OWASP CSRFProtector: Incomplete configuration file!");
 				exit;
 			}
@@ -125,9 +132,8 @@ class csrfProtector
 
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
-
 		if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
-			|| !isset($_SESSION[self::$config['CSRFP_TOKEN']]))
+			|| !isset($_SESSION[self::$config['CSRFP_TOKEN']][0]))
 			self::refreshToken();
 	}
 
@@ -193,6 +199,46 @@ class csrfProtector
 	}
 
 	/*
+	 * Function: validateToken
+	 * function to validatet the token with ones in session
+	 *
+	 * Parameters:
+	 * $token - token to compare with
+	 *
+	 * Returns:
+	 * $flag - (bool) true for passed validation false otherwise
+	 */
+	private static function validateToken($token) {
+		$flag = false;
+		$offset = 0;
+		$MAX = count($_SESSION[self::$config['CSRFP_TOKEN']]);
+
+		foreach ($_SESSION[self::$config['CSRFP_TOKEN']] as $key => $value) {
+			// [0] is the value
+			// [1] is the timestamp
+			if ($token == $value[0]
+				&& (intval($value[1]) >= time() - self::$tokenExpiryTime
+					|| $key == $MAX - 1)) {
+				$flag = true;
+				$offset = $key;
+				break;
+			}
+		}
+
+		//Clear old tokens
+		$tempSessionArray = array();
+		foreach ($_SESSION[self::$config['CSRFP_TOKEN']] as $key => $value) {
+			if (intval($value[1]) >= time() - self::$tokenExpiryTime
+				|| $key == $MAX - 1) {
+				array_push($tempSessionArray, $value);
+			}
+		}
+
+		$_SESSION[self::$config['CSRFP_TOKEN']] = $tempSessionArray;
+		return $flag;
+	}
+
+	/*
 	 * Function: authorizePost
 	 * function to authorise incoming post requests
 	 *
@@ -218,7 +264,7 @@ class csrfProtector
 			//currently for same origin only
 			if (!(isset($_POST[self::$config['CSRFP_TOKEN']]) 
 				&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-				&& ($_POST[self::$config['CSRFP_TOKEN']] === $_SESSION[self::$config['CSRFP_TOKEN']])
+				&& self::validateToken($_POST[self::$config['CSRFP_TOKEN']])
 				)) {
 
 				//action in case of failed validation
@@ -231,7 +277,7 @@ class csrfProtector
 			//currently for same origin only
 			if (!(isset($_GET[self::$config['CSRFP_TOKEN']]) 
 				&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-				&& ($_GET[self::$config['CSRFP_TOKEN']] === $_SESSION[self::$config['CSRFP_TOKEN']])
+				&& self::validateToken($_GET[self::$config['CSRFP_TOKEN']])
 				)) {
 
 				//action in case of failed validation
@@ -314,9 +360,19 @@ class csrfProtector
 	public static function refreshToken()
 	{
 		$token = self::generateAuthToken();
+		$index  = 0;
 
 		//set token to session for server side validation
-		$_SESSION[self::$config['CSRFP_TOKEN']] = $token;
+		(isset($_SESSION[self::$config['CSRFP_TOKEN']])) ?
+			$index = count($_SESSION[self::$config['CSRFP_TOKEN']]) :
+			$_SESSION[self::$config['CSRFP_TOKEN']] = array();
+		
+		if ($index == 0)
+			$_SESSION[self::$config['CSRFP_TOKEN']] = array();
+
+		$_SESSION[self::$config['CSRFP_TOKEN']][$index] = array(
+			0 => $token,
+			1 => time());
 
 		//set token to cookie for client side processing
 		setcookie(self::$config['CSRFP_TOKEN'], 

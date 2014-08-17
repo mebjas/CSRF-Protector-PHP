@@ -19,7 +19,7 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: [],
+	checkForUrls: ['http://test/index*'],
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
@@ -247,6 +247,7 @@ function csrfprotector_init() {
 	 */
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
+			
 			if (data !== "") {
 				data += "&";
 			} else {
