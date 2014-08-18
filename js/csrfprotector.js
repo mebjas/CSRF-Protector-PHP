@@ -19,7 +19,7 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: ['http://test/index*'],
+	checkForUrls: [],
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
