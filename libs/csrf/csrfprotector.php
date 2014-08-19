@@ -210,7 +210,6 @@ class csrfProtector
 	 */
 	private static function validateToken($token) {
 		$flag = false;
-		$offset = 0;
 		$MAX = count($_SESSION[self::$config['CSRFP_TOKEN']]);
 
 		foreach ($_SESSION[self::$config['CSRFP_TOKEN']] as $key => $value) {
@@ -220,7 +219,6 @@ class csrfProtector
 				&& (intval($value[1]) >= time() - self::$tokenExpiryTime
 					|| $key == $MAX - 1)) {
 				$flag = true;
-				$offset = $key;
 				break;
 			}
 		}
