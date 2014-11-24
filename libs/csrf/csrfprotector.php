@@ -132,8 +132,13 @@ class csrfProtector
 
 		// Initialize output buffering handler
 		ob_start('csrfProtector::ob_handler');
+
 		if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
-			|| !isset($_SESSION[self::$config['CSRFP_TOKEN']][0]))
+			|| !isset($_SESSION[self::$config['CSRFP_TOKEN']][0])
+			|| ($_COOKIE[self::$config['CSRFP_TOKEN']] != 
+				$_SESSION[self::$config['CSRFP_TOKEN']]][count(
+					$_SESSION[self::$config['CSRFP_TOKEN']]) - 1][0]
+				))
 			self::refreshToken();
 	}
 
