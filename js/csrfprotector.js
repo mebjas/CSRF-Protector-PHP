@@ -231,14 +231,16 @@ function csrfprotector_init() {
 	 */
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
-			
-			if (typeof data !== undefined) {
-				data += "&";
+			if (data !== null && typeof data === 'object') {
+				data.append(CSRFP.CSRFP_TOKEN, CSRFP._getAuthKey());
 			} else {
-				data = "";
+				if (data !== "") {
+					data += "&";
+				} else {
+					data = "";
+				}
+				data += CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
 			}
-			
-			data += "csrfp_token=" +CSRFP._getAuthKey();
 		}
 		return this.old_send(data);
 	}
