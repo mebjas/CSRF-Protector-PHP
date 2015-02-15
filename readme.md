@@ -3,11 +3,31 @@ CSRF Protector
 [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP) [![Coverage Status](https://coveralls.io/repos/mebjas/CSRF-Protector-PHP/badge.png?branch=master)](https://coveralls.io/r/mebjas/CSRF-Protector-PHP?branch=master)
 <br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app.
 
+Add to your project using packagist
+==========
+ Add a `composer.json` file to your project directory
+ ```json
+ {
+    "require": {
+        "owasp/csrf-protector-php": "dev-master"
+    }
+}
+```
+Then open terminal (or command prompt), move to project directory and run
+```shell
+composer install
+```
+OR
+```
+php composer.phar install
+```
+This will add CSRFP (library will be downloaded at ./vendor/owasp/csrf-protector-php) to your project directory. View [packagist.org](https://packagist.org/) for more help with composer!
+
 How to use
 ==========
 ```php
 <?php
-include_once __DIR__ .'/libs/csrf/csrfprotector.php';
+include_once __DIR__ .'/vendor/owasp/csrf-protector-php/libs/csrf/csrfprotector.php';
 
 //Initialise CSRFGuard library
 csrfProtector::init();
