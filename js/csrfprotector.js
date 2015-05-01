@@ -19,7 +19,10 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: [],
+	checkForUrls: Array.prototype.slice.call(document.getElementsByName("checkForUrls"))
+		.map(function (element) {
+		return element.value;
+		}),
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
