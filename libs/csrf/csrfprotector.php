@@ -417,9 +417,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    if ($arrayStr !== '') {
 		    	$script .= 'CSRFP.checkForUrls = [' .$arrayStr .'];' .PHP_EOL;
 		    }
-		    $script .= 'window.onload = function() {' .PHP_EOL;
-		    $script .= '	csrfprotector_init();' .PHP_EOL;
-		    $script .= '};' .PHP_EOL;
 		    $script .= '</script>' .PHP_EOL;
 
 		    //implant the CSRFGuard js file to outgoing script

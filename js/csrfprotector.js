@@ -314,3 +314,7 @@ function csrfprotector_init() {
 	}
 
 }
+
+window.addEventListener("DOMContentLoaded", function() {
+	csrfprotector_init();
+}, false);
