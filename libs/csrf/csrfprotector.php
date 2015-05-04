@@ -408,12 +408,14 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    }
 
 		    //implant hidden fields with check url information for reading in javascript
-		    $hiddenInput = function ($str) {
-		        return sprintf('<input type="hidden" name="checkForUrls" value="%s"></input>', $str);
-		    };
-		    $hiddenInputUrls = array_map($hiddenInput, $urls);
-		    $hiddenInputUrlStr = implode(PHP_EOL, $hiddenInputUrls);
-		    $buffer = str_ireplace('</body>', $hiddenInputUrlStr . '</body>', $buffer);
+		    if (count($urls) > 0) {
+		        $hiddenInput = function ($str) {
+		            return sprintf('<input type="hidden" name="CSRFP_checkForUrls" value="%s"></input>', $str);
+		        };
+		        $hiddenInputUrls = array_map($hiddenInput, $urls);
+		        $hiddenInputUrlStr = implode(PHP_EOL, $hiddenInputUrls);
+		        $buffer = str_ireplace('</body>', $hiddenInputUrlStr . '</body>', $buffer);
+		    }
 
 		    //implant the CSRFGuard js file to outgoing script
 		    $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>' . PHP_EOL;

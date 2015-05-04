@@ -19,7 +19,7 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: Array.prototype.slice.call(document.getElementsByName("checkForUrls"))
+	checkForUrls: Array.prototype.slice.call(document.getElementsByName("CSRFP_checkForUrls"))
 		.map(function (element) {
 		return element.value;
 		}),
