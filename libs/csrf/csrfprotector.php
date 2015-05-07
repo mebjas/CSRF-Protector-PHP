@@ -354,8 +354,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    $hiddenInput .= '<input type="hidden" id="' .CSRFP_FIELD_URLS .'" value=\''
 		    				.json_encode(self::$config['verifyGetFor']) .'\'>';
 
-			//implant hidden fields with check url information for reading in javascript
-			$buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
+		    //implant hidden fields with check url information for reading in javascript
+		    $buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
 
 
 		    $script = '<script type="text/javascript" src="' .self::$config['jsUrl']
