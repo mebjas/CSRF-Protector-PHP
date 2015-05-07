@@ -11,6 +11,9 @@
  * =================================================================
  */
 
+var CSRFP_FIELD_TOKEN_NAME = 'csrfp_hidden_data_token';
+var CSRFP_FIELD_URLS = 'csrfp_hidden_data_urls';
+
 var CSRFP = {
 	CSRFP_TOKEN: 'csrfp_token',
 	/**
@@ -140,6 +143,14 @@ var CSRFP = {
 	 * @return void
 	 */
 	_init: function() {
+		CSRFP.CSRFP_TOKEN = document.getElementById(CSRFP_FIELD_TOKEN_NAME).value;
+		try {
+			CSRFP.checkForUrls = JSON.parse(document.getElementById(CSRFP_FIELD_URLS).value);
+		} catch (err) {
+			console.error(err);
+			console.error('[ERROR] [CSRF Protector] unable to parse blacklisted url fields.');
+		}
+
 		//convert these rules received from php lib to regex objects
 		for (var i = 0; i < CSRFP.checkForUrls.length; i++) {
 			CSRFP.checkForUrls[i] = CSRFP.checkForUrls[i].replace(/\*/g, '(.*)')
@@ -189,9 +200,24 @@ function csrfprotector_init() {
 		}	
 	}
 
+	/**
+	 * Add wrapper for IE's attachEvent
+	 */
+	if (typeof HTMLFormElement.prototype.attachEvent !== 'undefined') {
+		HTMLFormElement.prototype.attachEvent_ = HTMLFormElement.prototype.attachEvent;
+		HTMLFormElement.prototype.attachEvent = function(eventType, fun) {
+			if (eventType === 'submit') {
+				var wrapped = CSRFP._csrfpWrap(fun, this);
+				this.attachEvent_(eventType, wrapped);
+			} else {
+				this.attachEvent_(eventType, fun);
+			}
+		}
+	}
+
 
 	//==================================================================
-	// Wrapper for XMLHttpRequest
+	// Wrapper for XMLHttpRequest & ActiveXObject (for IE 6 & below)
 	// Set X-No-CSRF to true before sending if request method is 
 	//==================================================================
 
@@ -246,12 +272,19 @@ function csrfprotector_init() {
 		return this.old_send(data);
 	}
 
-	// Wrapping
-	XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
-	XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
-	XMLHttpRequest.prototype.open = new_open;
-	XMLHttpRequest.prototype.send = new_send;
-
+	if (window.XMLHttpRequest) {
+		// Wrapping
+		XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
+		XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
+		XMLHttpRequest.prototype.open = new_open;
+		XMLHttpRequest.prototype.send = new_send;
+	}
+	if (typeof ActiveXObject !== 'undefined') {
+		ActiveXObject.prototype.old_send = ActiveXObject.prototype.send;
+		ActiveXObject.prototype.old_open = ActiveXObject.prototype.open;
+		ActiveXObject.prototype.open = new_open;
+		ActiveXObject.prototype.send = new_send;	
+	}
 	//==================================================================
 	// Rewrite existing urls ( Attach CSRF token )
 	// Rules:
@@ -292,3 +325,7 @@ function csrfprotector_init() {
 	}
 
 }
+
+window.addEventListener("DOMContentLoaded", function() {
+	csrfprotector_init();
+}, false);
