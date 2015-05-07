@@ -11,6 +11,9 @@
  * =================================================================
  */
 
+var CSRFP_FIELD_TOKEN_NAME = 'csrfp_hidden_data_token';
+var CSRFP_FIELD_URLS = 'csrfp_hidden_data_urls';
+
 var CSRFP = {
 	CSRFP_TOKEN: 'csrfp_token',
 	/**
@@ -140,6 +143,14 @@ var CSRFP = {
 	 * @return void
 	 */
 	_init: function() {
+		CSRFP.CSRFP_TOKEN = document.getElementById(CSRFP_FIELD_TOKEN_NAME).value;
+		try {
+			CSRFP.checkForUrls = JSON.parse(document.getElementById(CSRFP_FIELD_URLS).value);
+		} catch (err) {
+			console.error(err);
+			console.error('[ERROR] [CSRF Protector] unable to parse blacklisted url fields.');
+		}
+
 		//convert these rules received from php lib to regex objects
 		for (var i = 0; i < CSRFP.checkForUrls.length; i++) {
 			CSRFP.checkForUrls[i] = CSRFP.checkForUrls[i].replace(/\*/g, '(.*)')
@@ -314,3 +325,7 @@ function csrfprotector_init() {
 	}
 
 }
+
+window.addEventListener("DOMContentLoaded", function() {
+	csrfprotector_init();
+}, false);

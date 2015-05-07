@@ -89,38 +89,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));
     }
 
-    /**
-     * test useCachedVersion()
-     */
-    public function testUseCachedVersion()
-    {
-        if (filemtime(__DIR__ .'/../js/csrfprotector.js') < filemtime(__DIR__ .'/../libs/config.php')) {
-            $this->assertFalse(csrfprotector::useCachedVersion());
-        } else {
-            $this->assertTrue(csrfprotector::useCachedVersion());
-        }
-        
-        $temp = csrfprotector::$config['jsPath'];
-        csrfprotector::$config['jsPath'] = 'some_random_name';
-        $this->assertFalse(csrfprotector::useCachedVersion());
-        csrfprotector::$config['jsPath'] = $temp;
-    }
-
-    /**
-     * test for createNewJsCache()
-     */
-    public function testCreateNewJsCache()
-    {
-        $time1 = filemtime(__DIR__ ."/../js/csrfprotector.js");
-
-        csrfprotector::$config['verifyGetFor'] = $this->config['verifyGetFor'];
-        csrfprotector::createNewJsCache();
-
-        $time2 = filemtime(__DIR__ ."/../js/csrfprotector.js");
-
-        //$this->assertTrue($time2 > $time1);
-        $this->markTestSkipped('Compare file last modified after calling function');
-    }
 
     /**
      * test authorise post -> log directory exception
