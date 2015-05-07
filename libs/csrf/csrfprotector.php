@@ -3,8 +3,14 @@
 if (!defined('__CSRF_PROTECTOR__')) {
 	define('__CSRF_PROTECTOR__', true); 	// to avoid multiple declaration errors
 
-	//name of HTTP POST variable for authentication
+	// name of HTTP POST variable for authentication
 	define("CSRFP_TOKEN","csrfp_token");
+
+	// We insert token name and list of url patterns for which
+	// GET requests are validated against CSRF as hidden input fields
+	// these are the names of the input fields
+	define("CSRFP_FIELD_TOKEN_NAME", "csrfp_hidden_data_token");
+	define("CSRFP_FIELD_URLS", "csrfp_hidden_data_urls");
 
 	/**
 	 * child exception classes
@@ -132,67 +138,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
 				|| !isset($_SESSION[self::$config['CSRFP_TOKEN']]))
 				self::refreshToken();
-		}
 
-		/*
-		 * Function: useCachedVersion
-		 * function to check weather to use cached version of js
-		 * 		file or not
-		 *
-		 * Parameters:
-		 *  void
-		 *
-		 * Returns:
-		 * bool -- true if cacheversion can be used
-		 *					-- false otherwise
-		 */
-		public static function useCachedVersion()
-		{
-			$configLastModified = filemtime(__DIR__ ."/../config.php");
-			if (file_exists(__DIR__ ."/../" .self::$config['jsPath'])) {
-				$jsFileLastModified = filemtime(__DIR__ ."/../" 
-					.self::$config['jsPath']);
-				if ($jsFileLastModified < $configLastModified) {
-					// -- config is more recent than js file
-					return false;
-				}
-				return true;
-			} else
-				return false;
-			
-		}
-
-		/*
-		 * Function: createNewJsCache
-		 * Function to create new cache version of js
-		 *
-		 * Parameters:
-		 * void
-		 *
-		 * Returns:
-		 * void
-		 *
-		 * Throws:
-		 * baseJSFileNotFoundExceptio - if baseJsFile is not found
-		 */
-		public static function createNewJsCache()
-		{
-			if (!file_exists(__DIR__ ."/csrfpJsFileBase.php")) {
-				throw new baseJSFileNotFoundExceptio("OWASP CSRFProtector: base js file needed to create js file not found at " .__DIR__);
-				return;
-			}
-
-			$jsFile = file_get_contents(__DIR__ ."/csrfpJsFileBase.php");
-			$arrayStr = '';
-			if (self::$config['verifyGetFor']) {
-				foreach (self::$config['verifyGetFor'] as $key => $value) {
-					if ($key != 0) $arrayStr .= ',';
-					$arrayStr .= "'". $value ."'";
-				}
-			}
-			$jsFile = str_replace('$$tokenName$$', self::$config['CSRFP_TOKEN'], $jsFile);
-			$jsFile = str_replace('$$getAllowedUrls$$', $arrayStr, $jsFile);
-			file_put_contents(__DIR__ ."/../" .self::$config['jsPath'], $jsFile);
+			// Set protected by CSRF Protector header
+			header('X-CSRF-Protection: OWASP CSRFP 1.0.0');
 		}
 
 		/*
@@ -396,30 +344,19 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
 		    	"</noscript>", $buffer);
 
-		    $urls = array();
-		    if (!self::useCachedVersion()) {
-		    	try {
-		    		self::createNewJsCache();
-		    	} catch (exception $ex) {
-		    		if (self::$config['verifyGetFor']) {
-						$urls = self::$config['verifyGetFor'];
-					}
-		    	}
-		    }
+		    $hiddenInput = '<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME.'" value="' 
+		    				.self::$config['CSRFP_TOKEN'] .'">' .PHP_EOL;
+
+		    $hiddenInput .= '<input type="hidden" id="' .CSRFP_FIELD_URLS .'" value=\''
+		    				.json_encode(self::$config['verifyGetFor']) .'\'>';
 
 		    //implant hidden fields with check url information for reading in javascript
-		    if (count($urls) > 0) {
-		        $hiddenInput = function ($str) {
-		            return sprintf('<input type="hidden" name="CSRFP_checkForUrls" value="%s"></input>', $str);
-		        };
-		        $hiddenInputUrls = array_map($hiddenInput, $urls);
-		        $hiddenInputUrlStr = implode(PHP_EOL, $hiddenInputUrls);
-		        $buffer = str_ireplace('</body>', $hiddenInputUrlStr . '</body>', $buffer);
-		    }
+	        $buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
 
 		    //implant the CSRFGuard js file to outgoing script
 		    $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>' . PHP_EOL;
 		    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
+
 		    if (!$count)
 		        $buffer .= $script;
 
