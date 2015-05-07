@@ -396,33 +396,29 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
 		    	"</noscript>", $buffer);
 
-		    $arrayStr = '';
+		    $urls = array();
 		    if (!self::useCachedVersion()) {
 		    	try {
 		    		self::createNewJsCache();
 		    	} catch (exception $ex) {
 		    		if (self::$config['verifyGetFor']) {
-						foreach (self::$config['verifyGetFor'] as $key => $value) {
-							if ($key != 0) $arrayStr .= ',';
-							$arrayStr .= "'". $value ."'";
-						}
+						$urls = self::$config['verifyGetFor'];
 					}
 		    	}
 		    }
 
-		    $script = '<script type="text/javascript" src="' .self::$config['jsUrl']
-		    	.'"></script>' .PHP_EOL;
-
-		    $script .= '<script type="text/javascript">' .PHP_EOL;
-		    if ($arrayStr !== '') {
-		    	$script .= 'CSRFP.checkForUrls = [' .$arrayStr .'];' .PHP_EOL;
+		    //implant hidden fields with check url information for reading in javascript
+		    if (count($urls) > 0) {
+		        $hiddenInput = function ($str) {
+		            return sprintf('<input type="hidden" name="CSRFP_checkForUrls" value="%s"></input>', $str);
+		        };
+		        $hiddenInputUrls = array_map($hiddenInput, $urls);
+		        $hiddenInputUrlStr = implode(PHP_EOL, $hiddenInputUrls);
+		        $buffer = str_ireplace('</body>', $hiddenInputUrlStr . '</body>', $buffer);
 		    }
-		    $script .= 'window.onload = function() {' .PHP_EOL;
-		    $script .= '	csrfprotector_init();' .PHP_EOL;
-		    $script .= '};' .PHP_EOL;
-		    $script .= '</script>' .PHP_EOL;
 
 		    //implant the CSRFGuard js file to outgoing script
+		    $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>' . PHP_EOL;
 		    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
 		    if (!$count)
 		        $buffer .= $script;

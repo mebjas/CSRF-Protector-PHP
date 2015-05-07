@@ -19,7 +19,10 @@ var CSRFP = {
 	 *
 	 * @var string array
 	 */
-	checkForUrls: [],
+	checkForUrls: Array.prototype.slice.call(document.getElementsByName("CSRFP_checkForUrls"))
+		.map(function (element) {
+		return element.value;
+		}),
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
@@ -314,3 +317,7 @@ function csrfprotector_init() {
 	}
 
 }
+
+window.addEventListener("DOMContentLoaded", function() {
+	csrfprotector_init();
+}, false);
