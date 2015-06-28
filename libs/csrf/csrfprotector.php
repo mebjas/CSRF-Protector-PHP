@@ -295,7 +295,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			//#todo - if $length > 128 throw exception 
 
-			if (function_exists("hash_algos") && in_array("sha512", hash_algos())) {
+			if (function_exists("random_bytes")) {
+				$token = base64_encode(random_bytes(96));
+			} else if (function_exists("openssl_random_pseudo_bytes")) {
+				$token = base64_encode(openssl_random_pseudo_bytes(96));
+			} else if (function_exists("hash_algos") && in_array("sha512", hash_algos())) {
 				$token = hash("sha512", mt_rand(0, mt_getrandmax()));
 			} else {
 				$token = '';
