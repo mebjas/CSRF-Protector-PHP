@@ -250,7 +250,9 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']]
+            = $_GET[csrfprotector::$config['CSRFP_TOKEN']]
+            = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0];
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
         csrfprotector::authorizePost(); //will create new session and cookies
@@ -262,7 +264,9 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         // For get method
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfp_wrapper::changeRequestType('GET');
-        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']]
+            = $_GET[csrfprotector::$config['CSRFP_TOKEN']]
+            = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0];
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
         csrfprotector::authorizePost(); //will create new session and cookies
