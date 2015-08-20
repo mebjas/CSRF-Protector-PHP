@@ -87,7 +87,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][1]));
     }
 
 
@@ -253,17 +253,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
-        $temp_elem_count = count($temp);
-        $temp_elems = array();
-        foreach ($temp as $value) {
-            array_push($temp_elems, $value);
-        }
-
         csrfprotector::authorizePost(); //will create new session and cookies
         $this->assertFalse($temp_elems == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));  // Combine these 3 later
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
 
         // For get method
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -272,11 +266,10 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
 
         csrfprotector::authorizePost(); //will create new session and cookies
-
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
-        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']]));  // Combine these 3 later
+        $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
     }
 
     /**
