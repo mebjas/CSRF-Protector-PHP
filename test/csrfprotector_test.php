@@ -245,7 +245,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
     /**
      * test authorise success
-     * @runInSeparateProcess
      */
     public function testAuthorisePost_success()
     {
