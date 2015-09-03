@@ -136,7 +136,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			ob_start('csrfProtector::ob_handler');
 
 			if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
-				|| !isset($_SESSION[self::$config['CSRFP_TOKEN']]))
+				|| !isset($_SESSION[self::$config['CSRFP_TOKEN']])
+				|| !is_array($_SESSION[self::$config['CSRFP_TOKEN']]))
 				self::refreshToken();
 
 			// Set protected by CSRF Protector header
@@ -169,7 +170,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				//currently for same origin only
 				if (!(isset($_POST[self::$config['CSRFP_TOKEN']]) 
 					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-					&& ($_POST[self::$config['CSRFP_TOKEN']] === $_SESSION[self::$config['CSRFP_TOKEN']])
+					&& (self::isValidToken($_POST[self::$config['CSRFP_TOKEN']]))
 					)) {
 
 					//action in case of failed validation
@@ -182,7 +183,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				//currently for same origin only
 				if (!(isset($_GET[self::$config['CSRFP_TOKEN']]) 
 					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-					&& ($_GET[self::$config['CSRFP_TOKEN']] === $_SESSION[self::$config['CSRFP_TOKEN']])
+					&& (self::isValidToken($_GET[self::$config['CSRFP_TOKEN']]))
 					)) {
 
 					//action in case of failed validation
@@ -191,6 +192,35 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			}	
+		}
+
+		/*
+		 * Function: isValidToken
+		 * function to check the validity of token in session array
+		 * Function also clears all tokens older than latest one
+		 *
+		 * Parameters: 
+		 * $token - the token sent with GET or POST payload
+		 *
+		 * Returns: 
+		 * bool - true if its valid else false
+		 */
+		private static function isValidToken($token) {
+			if (!isset($_SESSION[self::$config['CSRFP_TOKEN']])) return false;
+			if (!is_array($_SESSION[self::$config['CSRFP_TOKEN']])) return false;
+			foreach ($_SESSION[self::$config['CSRFP_TOKEN']] as $key => $value) {
+				if ($value == $token) {
+
+					// Clear all older tokens assuming they have been consumed
+					foreach ($_SESSION[self::$config['CSRFP_TOKEN']] as $_key => $_value) {
+						if ($_value == $token) break;
+						array_shift($_SESSION[self::$config['CSRFP_TOKEN']]);
+					}
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/*
@@ -266,8 +296,12 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		{
 			$token = self::generateAuthToken();
 
+			if (!isset($_SESSION[self::$config['CSRFP_TOKEN']])
+				|| !is_array($_SESSION[self::$config['CSRFP_TOKEN']]))
+				$_SESSION[self::$config['CSRFP_TOKEN']] = array();
+
 			//set token to session for server side validation
-			$_SESSION[self::$config['CSRFP_TOKEN']] = $token;
+			array_push($_SESSION[self::$config['CSRFP_TOKEN']], $token);
 
 			//set token to cookie for client side processing
 			setcookie(self::$config['CSRFP_TOKEN'], 
@@ -338,6 +372,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		        }
 		    }
 		    
+		    // TODO: statically rewrite all forms as well so that if a form is submitted
+		    // before the js has worked on, it will still have token to send
+		    // @priority: medium @labels: important
+
 		    //add a <noscript> message to outgoing HTML output,
 		    //informing the user to enable js for CSRFProtector to work
 		    //best section to add, after <body> tag
