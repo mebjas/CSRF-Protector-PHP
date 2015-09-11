@@ -137,7 +137,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
 				|| !isset($_SESSION[self::$config['CSRFP_TOKEN']])
-				|| !is_array($_SESSION[self::$config['CSRFP_TOKEN']]))
+				|| !is_array($_SESSION[self::$config['CSRFP_TOKEN']])
+				|| !in_array($_COOKIE[self::$config['CSRFP_TOKEN']],
+					$_SESSION[self::$config['CSRFP_TOKEN']]))
 				self::refreshToken();
 
 			// Set protected by CSRF Protector header

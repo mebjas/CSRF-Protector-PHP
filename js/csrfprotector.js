@@ -261,7 +261,7 @@ function csrfprotector_init() {
 			if (data !== null && typeof data === 'object') {
 				data.append(CSRFP.CSRFP_TOKEN, CSRFP._getAuthKey());
 			} else {
-				if (data !== "") {
+				if (typeof data != "undefined") {
 					data += "&";
 				} else {
 					data = "";
