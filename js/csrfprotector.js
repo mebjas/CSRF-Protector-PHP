@@ -289,39 +289,43 @@ function csrfprotector_init() {
 	// Rewrite existing urls ( Attach CSRF token )
 	// Rules:
 	// Rewrite those urls which matches the regex sent by Server
-	// Ingore cross origin urls & internal links (one with hashtags)
+	// Ignore cross origin urls & internal links (one with hashtags)
 	// Append the token to those url already containig GET query parameter(s)
 	// Add the token to those which does not contain GET query parameter(s)
 	//==================================================================
 
 	for (var i = 0; i < document.links.length; i++) {
-        document.links[i].addEventListener("mousedown", function(event) {
-            var urlDisect = event.target.href.split('#');
-            var url = urlDisect[0];
-            var hash = urlDisect[1];
-			
-            if(CSRFP._getDomain(url).indexOf(document.domain) === -1
-				|| CSRFP._isValidGetRequest(url)) {
-                //cross origin or not to be protected by rules -- ignore 
-				return;
-            }
-            
-            if (url.indexOf('?') !== -1) {
-                if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
-                    url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-                } else {
-                    url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
-						CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
-                }
-            } else {
-                url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-            }
-            
-            event.target.href = url;
-            if (typeof hash !== 'undefined') {
-                event.target.href += '#' +hash;
-            }
-        });
+		document.links[i].addEventListener("mousedown", function(event) {
+			var href = event.target.href;
+			if(typeof href === "string")
+			{
+				var urlDisect = href.split('#');
+				var url = urlDisect[0];
+				var hash = urlDisect[1];
+
+				if(CSRFP._getDomain(url).indexOf(document.domain) === -1
+					|| CSRFP._isValidGetRequest(url)) {
+					//cross origin or not to be protected by rules -- ignore
+					return;
+				}
+
+				if (url.indexOf('?') !== -1) {
+					if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
+						url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+					} else {
+						url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
+							CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
+					}
+				} else {
+					url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+				}
+
+				event.target.href = url;
+				if (typeof hash !== 'undefined') {
+					event.target.href += '#' +hash;
+				}
+			}
+		});
 	}
 
 }
