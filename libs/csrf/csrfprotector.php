@@ -104,11 +104,22 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (session_id() == '')
 			    session_start();
 
-			if (!file_exists(__DIR__ ."/../config.php"))
-				throw new configFileNotFoundException("OWASP CSRFProtector: configuration file not found for CSRFProtector!");	
+			/*
+			 * load configuration file and properties
+			 * Check locally for a config.php then check for 
+			 * a config/csrf_config.php file in the root folder
+			 * for composer installations
+			 */
+			$standard_config_location = __DIR__ ."/../config.php";
+			$composer_config_location = __DIR__ ."/../../../../../config/csrf_config.php";
 
-			//load configuration file and properties
-			self::$config = include(__DIR__ ."/../config.php");
+			if (file_exists($standard_config_location)) {
+				self::$config = include($standard_config_location);
+			} elseif(file_exists($composer_config_location)) {
+				self::$config = include($composer_config_location);
+			} else {
+				throw new configFileNotFoundException("OWASP CSRFProtector: configuration file not found for CSRFProtector!");
+			}
 
 			//overriding length property if passed in parameters
 			if ($length != null)
