@@ -387,7 +387,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    
 		    // TODO: statically rewrite all forms as well so that if a form is submitted
 		    // before the js has worked on, it will still have token to send
-		    // @priority: medium @labels: important
+		    // @priority: medium @labels: important @assign: mebjas
+		    // @deadline: 1 week
 
 		    //add a <noscript> message to outgoing HTML output,
 		    //informing the user to enable js for CSRFProtector to work
