@@ -65,7 +65,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Property: #6: disabledJavascriptMessage (string) => error message if client's js is disabled
 		 */
 		public static $config = array();
-
 		/*
 		 * Variable: $requiredConfigurations
 		 * Contains list of those parameters that are required to be there
@@ -203,8 +202,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * bool - true if its valid else false
 		 */
 		private static function isValidToken($token) {
-			if (empty($_COOKIES[self::$config['CSRFP_TOKEN']])) return false;
-			if ( $token == $_COOKIES[self::$config['CSRFP_TOKEN']]) return true;
+			if (empty($_COOKIE[self::$config['CSRFP_TOKEN']])) return false;
+			if ( $token == $_COOKIE[self::$config['CSRFP_TOKEN']]) return true;
 			return false;
 		}
 
