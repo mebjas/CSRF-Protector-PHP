@@ -320,7 +320,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			setcookie(self::$config['CSRFP_TOKEN'], 
 				$token, 
 				time() + self::$cookieExpiryTime,
-                ($_SERVER['SERVER_PORT'] == 443 ? true : false));
+                (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443 ? true : false));
 		}
 
 		/*
