@@ -486,7 +486,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				}
 			}
 
-			return $request_scheme . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_static'];
+			return $request_scheme . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 		}
 
 		/*
