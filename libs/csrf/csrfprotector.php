@@ -133,10 +133,15 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
 
 			// Validate the config if everythings filled out
+			// TODO: collect all missing values and throw exception together
 			foreach (self::$requiredConfigurations as $value) {
 				if (!isset(self::$config[$value]) || self::$config[$value] == '') {
-					throw new incompleteConfigurationException("OWASP CSRFProtector: Incomplete configuration file!");
-					exit;
+					throw new incompleteConfigurationException(
+						sprintf(
+							"OWASP CSRFProtector: Incomplete configuration file, Value: %s missing ",
+							$value
+						)
+					);
 				}
 			}
 
