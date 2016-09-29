@@ -1,4 +1,4 @@
-CSRF Protector
+CSRF Protector (Sessionless version)
 ==========================
 [![Todo Status](https://todofy.org/b/mebjas/CSRF-Protector-PHP)](https://todofy.org/r/mebjas/CSRF-Protector-PHP) [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP) [![Coverage Status](https://coveralls.io/repos/mebjas/CSRF-Protector-PHP/badge.png?branch=master)](https://coveralls.io/r/mebjas/CSRF-Protector-PHP?branch=master) 
 <br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app. 
