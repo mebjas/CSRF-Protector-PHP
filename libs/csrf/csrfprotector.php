@@ -142,6 +142,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 							$value
 						)
 					);
+					exit;
 				}
 			}
 
