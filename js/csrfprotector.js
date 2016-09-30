@@ -176,14 +176,26 @@ function csrfprotector_init() {
 	// Add for each POST, while for mentioned GET request
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
-		document.forms[i].addEventListener("submit", function(event) {
-			if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
-				event.target.appendChild(CSRFP._getInputElt());
-			} else {
-				//modify token to latest value
-				event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
-			}
-		});
+		if (window.addEventListener) {
+			document.forms[i].addEventListener("submit", function(event) {
+				if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
+					event.target.appendChild(CSRFP._getInputElt());
+				} else {
+					//modify token to latest value
+					event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
+				}
+			});
+		}
+		if (window.attachEvent) {
+			document.forms[i].attachEvent("onsubmit", function() {
+				if (typeof window.event.srcElement[CSRFP.CSRFP_TOKEN] === 'undefined') {
+					window.event.srcElement.appendChild(CSRFP._getInputElt());
+				} else {
+					//modify token to latest value
+					window.event.srcElement[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
+				}
+			});
+		}
 	}
 	
 	/**
@@ -295,41 +307,85 @@ function csrfprotector_init() {
 	//==================================================================
 
 	for (var i = 0; i < document.links.length; i++) {
-		document.links[i].addEventListener("mousedown", function(event) {
-			var href = event.target.href;
-			if(typeof href === "string")
-			{
-				var urlDisect = href.split('#');
-				var url = urlDisect[0];
-				var hash = urlDisect[1];
+		if (window.addEventListener) {
+			document.links[i].addEventListener("mousedown", function(event) {
+				var href = event.target.href;
+				if(typeof href === "string")
+				{
+					var urlDisect = href.split('#');
+					var url = urlDisect[0];
+					var hash = urlDisect[1];
 
-				if(CSRFP._getDomain(url).indexOf(document.domain) === -1
-					|| CSRFP._isValidGetRequest(url)) {
-					//cross origin or not to be protected by rules -- ignore
-					return;
-				}
-
-				if (url.indexOf('?') !== -1) {
-					if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
-						url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-					} else {
-						url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
-							CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
+					if(CSRFP._getDomain(url).indexOf(document.domain) === -1
+						|| CSRFP._isValidGetRequest(url)) {
+						//cross origin or not to be protected by rules -- ignore
+						return;
 					}
-				} else {
-					url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-				}
 
-				event.target.href = url;
-				if (typeof hash !== 'undefined') {
-					event.target.href += '#' +hash;
+					if (url.indexOf('?') !== -1) {
+						if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
+							url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+						} else {
+							url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
+								CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
+						}
+					} else {
+						url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+					}
+
+					event.target.href = url;
+					if (typeof hash !== 'undefined') {
+						event.target.href += '#' +hash;
+					}
 				}
-			}
-		});
+			});
+		}
+		if (window.attachEvent) {
+			document.links[i].attachEvent("onmousedown", function() {
+				var href = window.event.srcElement.href;
+				aler(href);
+				if(typeof href === "string")
+				{
+					var urlDisect = href.split('#');
+					var url = urlDisect[0];
+					var hash = urlDisect[1];
+
+					if(CSRFP._getDomain(url).indexOf(document.domain) === -1
+						|| CSRFP._isValidGetRequest(url)) {
+						//cross origin or not to be protected by rules -- ignore
+						return;
+					}
+
+					if (url.indexOf('?') !== -1) {
+						if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
+							url += "&" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+						} else {
+							url = url.replace(new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
+								CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey() + "$1");
+						}
+					} else {
+						url += "?" +CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
+					}
+
+					window.event.srcElement.href = url;
+					if (typeof hash !== 'undefined') {
+						window.event.srcElement.href += '#' +hash;
+					}
+				}
+			});			
+		}
 	}
 
 }
 
-window.addEventListener("DOMContentLoaded", function() {
-	csrfprotector_init();
-}, false);
+if (window.addEventListener) {
+	window.addEventListener("DOMContentLoaded", function() {
+		csrfprotector_init();
+	}, false);
+}
+if (window.attachEvent) {
+	window.attachEvent("onload", function() {
+		csrfprotector_init();
+	});
+}
+
