@@ -60,3 +60,7 @@ This version (`master`) requires the clients to have Javascript enabled. However
 
 for any other queries contact me at: **minhaz@owasp.org**
 
+### FAQ:
+1. What happens if token expires? - https://github.com/mebjas/CSRF-Protector-PHP/wiki/what-if-token-expires
+2. Secure flag in cookie? - https://github.com/mebjas/CSRF-Protector-PHP/issues/54
+3. NoJS support? - https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support
