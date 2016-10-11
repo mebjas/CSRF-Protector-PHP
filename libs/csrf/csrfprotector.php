@@ -325,7 +325,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			//set token to cookie for client side processing
 			setcookie(self::$config['CSRFP_TOKEN'], 
 				$token, 
-				time() + self::$cookieExpiryTime);
+				time() + self::$cookieExpiryTime,
+				'',
+				'',
+				(array_key_exists('secureCookie', self::$config) ? (bool)self::$config['secureCookie'] : false));
 		}
 
 		/*

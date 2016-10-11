@@ -24,6 +24,19 @@ class csrfp_wrapper extends csrfprotector
         }
         return false;
     }
+
+    public static function getHeaderValue($needle)
+    {
+        $haystack = xdebug_get_headers();
+        foreach ($haystack as $key => $value) {
+            if (strpos($value, $needle) === 0) {
+                // Deliberately overwrite to accept the last rather than first match
+                // as xdebug_get_headers() will accumulate all set headers
+                list(,$hvalue) = explode(':', $value, 2);
+            }
+        }
+        return $hvalue;
+    }
 }
 
 
@@ -44,6 +57,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
+        csrfprotector::$config['secureCookie'] = false;
 
 
 
@@ -54,6 +68,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = '123';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc'); //token mismatch - leading to failed validation
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
+        $_SERVER['HTTPS'] = null;
 
         $this->config = include(__DIR__ .'/../libs/config.sample.php');
         
@@ -90,6 +105,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][1]));
     }
 
+    public function testSecureCookie()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
+
+        csrfprotector::$config['secureCookie'] = true;
+        csrfprotector::refreshToken(); //will create new session and cookies
+        $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
+    }
 
     /**
      * test authorise post -> log directory exception
