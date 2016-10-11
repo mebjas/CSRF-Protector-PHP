@@ -105,13 +105,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][1]));
     }
 
+    /**
+     * test secure flag is set in the token cookie when requested
+     */
     public function testSecureCookie()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
 
+        csrfprotector::$config['secureCookie'] = false;
+        csrfprotector::refreshToken();
+        $this->assertNotRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
+
         csrfprotector::$config['secureCookie'] = true;
-        csrfprotector::refreshToken(); //will create new session and cookies
+        csrfprotector::refreshToken();
         $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
     }
 
