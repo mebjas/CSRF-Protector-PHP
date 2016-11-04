@@ -15,6 +15,10 @@ class csrfp_wrapper extends csrfprotector
         self::$requestType = $type;
     }
 
+    /**
+     * Function to check for a string value anywhere within HTTP response headers
+     * Returns true on first match of $needle in header names or values
+     */
     public static function checkHeader($needle)
     {
         $haystack = xdebug_get_headers();
@@ -25,6 +29,10 @@ class csrfp_wrapper extends csrfprotector
         return false;
     }
 
+    /**
+     * Function to return the string value of the last response header
+     * identified by name $needle
+     */
     public static function getHeaderValue($needle)
     {
         $haystack = xdebug_get_headers();
