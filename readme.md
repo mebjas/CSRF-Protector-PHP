@@ -3,6 +3,27 @@ CSRF Protector
 [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=nojs-support)](https://travis-ci.org/mebjas/CSRF-Protector-PHP) [![Coverage Status](https://coveralls.io/repos/mebjas/CSRF-Protector-PHP/badge.png?branch=nojs-support)](https://coveralls.io/r/mebjas/CSRF-Protector-PHP?branch=master)
 <br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app.
 
+<br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app. 
+
+Add to your project using packagist
+==========
+ Add a `composer.json` file to your project directory
+ ```json
+ {
+    "require": {
+        "owasp/csrf-protector-php": "dev-nojs-support"
+    }
+}
+```
+Then open terminal (or command prompt), move to project directory and run
+```shell
+composer install
+```
+OR
+```
+php composer.phar install
+```
+This will add CSRFP (library will be downloaded at ./vendor/owasp/csrf-protector-php) to your project directory. View [packagist.org](https://packagist.org/) for more help with composer!
 
 Note
 ==========
