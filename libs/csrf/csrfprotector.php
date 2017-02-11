@@ -426,7 +426,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Function: logCSRFattack
-		 * Functio to log CSRF Attack
+		 * Function to log CSRF Attack
 		 * 
 		 * Parameters: 
 		 * void
@@ -437,7 +437,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Throws: 
 		 * logFileWriteError - if unable to log an attack
 		 */
-		private static function logCSRFattack()
+		protected static function logCSRFattack()
 		{
 			//if file doesnot exist for, create it
 			$logFile = fopen(__DIR__ ."/../" .self::$config['logDirectory']
