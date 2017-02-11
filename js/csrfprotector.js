@@ -206,7 +206,7 @@ function csrfprotector_init() {
 	if (typeof HTMLFormElement.prototype.attachEvent !== 'undefined') {
 		HTMLFormElement.prototype.attachEvent_ = HTMLFormElement.prototype.attachEvent;
 		HTMLFormElement.prototype.attachEvent = function(eventType, fun) {
-			if (eventType === 'submit') {
+			if (eventType === 'onsubmit') {
 				var wrapped = CSRFP._csrfpWrap(fun, this);
 				this.attachEvent_(eventType, wrapped);
 			} else {
