@@ -171,23 +171,35 @@ function csrfprotector_init() {
 	
 	// Call the init funcion
 	CSRFP._init();
-	
+
+	// definition of basic FORM submit event handler to intercept the form request
+	// and attach a CSRFP TOKEN if it's not already available
+	var BasicSubmitInterceptor = function(event) {
+		if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
+			event.target.appendChild(CSRFP._getInputElt());
+		} else {
+			//modify token to latest value
+			event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
+		}
+	}
+
 	//==================================================================
 	// Adding csrftoken to request resulting from <form> submissions
 	// Add for each POST, while for mentioned GET request
 	// TODO - check for method
 	//==================================================================
-	for(var i = 0; i < document.forms.length; i++) {
-		document.forms[i].addEventListener("submit", function(event) {
-			if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
-				event.target.appendChild(CSRFP._getInputElt());
-			} else {
-				//modify token to latest value
-				event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
-			}
-		});
-	}
-	
+	// run time binding
+	document.querySelector('body').addEventListener('submit', function() {
+		if (event.target.tagName.toLowerCase() === 'form') {
+			BasicSubmitInterceptor(event);
+		};
+	});
+
+	// intial binding
+	// for(var i = 0; i < document.forms.length; i++) {
+	// 	document.forms[i].addEventListener("submit", BasicSubmitInterceptor);
+	// }
+
 	//==================================================================
 	// Adding csrftoken to request resulting from direct form.submit() call
 	// Add for each POST, while for mentioned GET request
