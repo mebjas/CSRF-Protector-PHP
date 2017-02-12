@@ -80,7 +80,8 @@ var CSRFP = {
 	 */
 	_getInputElt: function() {
 		var hiddenObj = document.createElement("input");
-		hiddenObj.name = CSRFP.CSRFP_TOKEN;
+		hiddenObj.setAttribute('name', CSRFP.CSRFP_TOKEN);
+		hiddenObj.setAttribute('class', CSRFP.CSRFP_TOKEN);
 		hiddenObj.type = 'hidden';
 		hiddenObj.value = CSRFP._getAuthKey();
 		return hiddenObj;
@@ -174,6 +175,7 @@ function csrfprotector_init() {
 	//==================================================================
 	// Adding csrftoken to request resulting from <form> submissions
 	// Add for each POST, while for mentioned GET request
+	// TODO - check for method
 	//==================================================================
 	for(var i = 0; i < document.forms.length; i++) {
 		document.forms[i].addEventListener("submit", function(event) {
@@ -186,9 +188,24 @@ function csrfprotector_init() {
 		});
 	}
 	
+	//==================================================================
+	// Adding csrftoken to request resulting from direct form.submit() call
+	// Add for each POST, while for mentioned GET request
+	// TODO - check for form method
+	//==================================================================
+	HTMLFormElement.prototype.submit_ = HTMLFormElement.prototype.submit;
+	HTMLFormElement.prototype.submit = function() {
+		// check if the FORM already contains the token element
+		if (!this.getElementsByClassName(CSRFP.CSRFP_TOKEN).length)
+			this.appendChild(CSRFP._getInputElt());
+		this.submit_();
+	}
+
+
 	/**
 	 * Add wrapper for HTMLFormElements addEventListener so that any further 
 	 * addEventListens won't have trouble with CSRF token
+	 * todo - check for method
 	 */
 	HTMLFormElement.prototype.addEventListener_ = HTMLFormElement.prototype.addEventListener;
 	HTMLFormElement.prototype.addEventListener = function(eventType, fun, bubble) {
@@ -202,6 +219,8 @@ function csrfprotector_init() {
 
 	/**
 	 * Add wrapper for IE's attachEvent
+	 * todo - check for method
+	 * todo - typeof is now obselete for IE 11, use some other method.
 	 */
 	if (typeof HTMLFormElement.prototype.attachEvent !== 'undefined') {
 		HTMLFormElement.prototype.attachEvent_ = HTMLFormElement.prototype.attachEvent;
