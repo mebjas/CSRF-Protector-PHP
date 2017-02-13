@@ -189,7 +189,7 @@ function csrfprotector_init() {
 	// TODO - check for method
 	//==================================================================
 	// run time binding
-	document.querySelector('body').addEventListener('submit', function() {
+	document.querySelector('body').addEventListener('submit', function(event) {
 		if (event.target.tagName.toLowerCase() === 'form') {
 			BasicSubmitInterceptor(event);
 		};
