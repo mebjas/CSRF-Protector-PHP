@@ -1,5 +1,6 @@
 <?php
 date_default_timezone_set('UTC');
+require_once 'PHPUnit/Autoload.php';
 require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
 /**
