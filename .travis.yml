@@ -5,11 +5,28 @@ php:
   - "5.4"
   - "5.3"
   - "7.0"
+  - "7.1"
   - hhvm
+  - nightly
+  - hhvm-3.3
+  - hhvm-3.6
+  - hhvm-3.9
+  - hhvm-3.12
+  - hhvm-nightly
 
 matrix:
     allow_failures:
+    - os: osx
     - php: hhvm
+    - php: hhvm-3.3
+    - php: hhvm-3.6
+    - php: hhvm-3.9
+    - php: hhvm-3.12
+    - php: hhvm-nightly
+
+os:
+  - linux
+  - osx
 
 before_script:
  - wget http://getcomposer.org/composer.phar
@@ -21,6 +38,6 @@ script:
 
 after_script:
  - php vendor/bin/coveralls -v
- 
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
