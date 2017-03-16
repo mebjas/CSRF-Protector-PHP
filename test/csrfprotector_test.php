@@ -2,9 +2,7 @@
 date_default_timezone_set('UTC');
 require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
-if (!class_exists('\PHPUnit\Framework\TestCase', true)) {
-    class_alias('\PHPUnit_Framework_TestCase', '\PHPUnit\Framework\TestCase');
-} elseif (!class_exists('\PHPUnit_Framework_TestCase', true)) {
+if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCase', true)) {
     class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
 }
 
@@ -79,8 +77,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorizePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
         $_SERVER['PHP_SELF'] = '/index.php';     // For authorizePost
-        $_POST[csrfprotector::$config['CSRFP_TOKEN']] = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = '123';
-        $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc'); //token mismatch - leading to failed validation
+        $_POST[csrfprotector::$config['CSRFP_TOKEN']]
+          = $_GET[csrfprotector::$config['CSRFP_TOKEN']] = '123';
+
+        //token mismatch - leading to failed validation
+        $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc');
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
         $_SERVER['HTTPS'] = null;
 
@@ -106,7 +107,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testRefreshToken()
     {
-
         $val = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = '123abcd';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
         csrfProtector::$config['tokenLength'] = 20;
