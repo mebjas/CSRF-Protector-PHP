@@ -2,6 +2,12 @@
 date_default_timezone_set('UTC');
 require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
+if (!class_exists('\PHPUnit\Framework\TestCase', true)) {
+    class_alias('\PHPUnit_Framework_TestCase', '\PHPUnit\Framework\TestCase');
+} elseif (!class_exists('\PHPUnit_Framework_TestCase', true)) {
+    class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
+}
+
 /**
  * Wrapper class for testing purpose
  */
@@ -79,12 +85,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['HTTPS'] = null;
 
         $this->config = include(__DIR__ .'/../libs/config.sample.php');
-        
+
         // Create an instance of config file -- for testing
         $data = file_get_contents(__DIR__ .'/../libs/config.sample.php');
-        file_put_contents(__DIR__ .'/../libs/config.php', $data);  
+        file_put_contents(__DIR__ .'/../libs/config.php', $data);
 
-        if (!defined('__TESTING_CSRFP__')) define('__TESTING_CSRFP__', true);    
+        if (!defined('__TESTING_CSRFP__')) define('__TESTING_CSRFP__', true);
     }
 
     /**
@@ -100,7 +106,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testRefreshToken()
     {
-        
+
         $val = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = '123abcd';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
         csrfProtector::$config['tokenLength'] = 20;
