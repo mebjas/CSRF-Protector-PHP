@@ -16,7 +16,7 @@ php:
 
 matrix:
     allow_failures:
-    - os: osx
+    - php: nightly
     - php: hhvm
     - php: hhvm-3.3
     - php: hhvm-3.6
