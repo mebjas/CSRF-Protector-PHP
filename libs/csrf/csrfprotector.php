@@ -132,6 +132,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (self::$config['CSRFP_TOKEN'] == '')
 				self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
 
+            if (self::$config['cookieDuration'] > 0)
+                self::$cookieExpiryTime = intval(self::$config['cookieDuration']);
+
+
 			// Validate the config if everythings filled out
 			// TODO: collect all missing values and throw exception together
 			foreach (self::$requiredConfigurations as $value) {
@@ -194,7 +198,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 					//action in case of failed validation
 					self::failedValidationAction();			
-				} else {
+				} else if(!(self::$config['reuseTokens'])) {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			} else if (!static::isURLallowed()) {
@@ -207,7 +211,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 					//action in case of failed validation
 					self::failedValidationAction();			
-				} else {
+				} else if(!(self::$config['reuseTokens'])) {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			}	
