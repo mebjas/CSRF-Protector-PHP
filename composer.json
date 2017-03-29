@@ -6,7 +6,7 @@
     "homepage": "https://github.com/mebjas/CSRF-Protector-PHP",
     "license": "APACHE",
     "require-dev": {
-        "satooshi/php-coveralls": ">=0.6"
+        "satooshi/php-coveralls": "dev-master"
     },
     "autoload": {
         "classmap": ["libs/csrf/"]

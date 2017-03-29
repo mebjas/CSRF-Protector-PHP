@@ -48,6 +48,22 @@ class csrfp_wrapper extends csrfprotector
             }
         }
         return $hvalue;
+    } 
+}
+
+/**
+ * helper methods
+ */
+class Helper {
+    /**
+     * Function to recusively delete a dir
+     */
+    public static function delTree($dir) { 
+        $files = array_diff(scandir($dir), array('.','..')); 
+        foreach ($files as $file) { 
+            (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
+        } 
+        return rmdir($dir); 
     }
 }
 
@@ -63,6 +79,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     protected $config = array();
 
     /**
+     * @var log directory for testing
+     */
+    private $logDir = __DIR__ .'/logs';
+
+    /**
      * Function to be run before every test*() functions.
      */
     public function setUp()
@@ -70,6 +91,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         csrfprotector::$config['secureCookie'] = false;
+        csrfprotector::$config['logDirectory'] = '../test/logs';
 
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorizePost
@@ -98,6 +120,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function tearDown()
     {
         unlink(__DIR__ .'/../libs/config.php');
+        if (is_dir(__DIR__ .'/logs'))
+            Helper::delTree(__DIR__ .'/logs');
     }
 
     /**
@@ -391,7 +415,25 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testgetCurrentUrl()
     {
-        $this->markTestSkipped('Cannot test private methods');
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('getCurrentUrl');
+        $method->setAccessible(true);
+        $this->assertEquals($method->invoke(null, []), "http://test/index.php");
+
+        $tmp_request_scheme = $_SERVER['REQUEST_SCHEME'];
+        unset($_SERVER['REQUEST_SCHEME']);
+
+        // server-https is not set
+        $this->assertEquals($method->invoke(null, []), "http://test/index.php");
+
+        $_SERVER['HTTPS'] = 'on';
+        $this->assertEquals($method->invoke(null, []), "https://test/index.php");
+        unset($_SERVER['HTTPS']);
+
+        $_SERVER['REQUEST_SCHEME'] = "https";
+        $this->assertEquals($method->invoke(null, []), "https://test/index.php");
+
+        $_SERVER['REQUEST_SCHEME'] = $tmp_request_scheme;
     }
 
     /**
@@ -399,7 +441,22 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testLoggingException()
     {
-        $this->markTestSkipped('Cannot test private methods');
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        try {
+            $method->invoke(null, []);
+            $this->fail("logFileWriteError was not caught");
+        } catch (Exception $ex) {
+            // pass
+            $this->assertTrue(true);
+        }
+
+        if (!is_dir($this->logDir))
+            mkdir($this->logDir);
+        $method->invoke(null, []);
+        $this->assertTrue(file_exists($this->logDir ."/" .date("m-20y") .".log"));
     }
 
     /**
