@@ -71,8 +71,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         csrfprotector::$config['secureCookie'] = false;
 
-
-
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorizePost
         $_SERVER['HTTP_HOST'] = 'test';         // For isUrlAllowed
@@ -85,10 +83,10 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
         $_SERVER['HTTPS'] = null;
 
-        $this->config = include(__DIR__ .'/../libs/config.sample.php');
+        $this->config = include(__DIR__ .'/config.test.php');
 
         // Create an instance of config file -- for testing
-        $data = file_get_contents(__DIR__ .'/../libs/config.sample.php');
+        $data = file_get_contents(__DIR__ .'/config.test.php');
         file_put_contents(__DIR__ .'/../libs/config.php', $data);
 
         if (!defined('__TESTING_CSRFP__')) define('__TESTING_CSRFP__', true);
@@ -439,10 +437,37 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         putenv('mod_csrfp_enabled=true');
         $temp = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc');
+
+        csrfProtector::$config = array();
         csrfProtector::init();
 
-        // Assuming no cookie change
-        $this->assertTrue($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
-        $this->assertTrue($temp == $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']]);
+        // Assuming no config was added
+        $this->assertTrue(count(csrfProtector::$config) == 0);
+        
+        // unset the env variable
+        putenv('mod_csrfp_enabled');
+    }
+
+    /**
+     * Test for exception thrown when init() method is called multiple times
+     */
+    public function testMultipleInitializeException()
+    {
+        csrfProtector::$config = array();
+        $this->assertTrue(count(csrfProtector::$config) == 0);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfProtector::init();
+
+        $this->assertTrue(count(csrfProtector::$config) == 11);
+        try {
+            csrfProtector::init();
+            $this->fail("alreadyInitializedException not raised");
+        }  catch (alreadyInitializedException $ex) {
+            // pass
+            $this->assertTrue(true);
+        } catch (Exception $ex) {
+            $this->fail("exception other than alreadyInitializedException failed");            
+        }
     }
 }

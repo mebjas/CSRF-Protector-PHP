@@ -8,26 +8,14 @@ php:
   - "7.1"
   - hhvm
   - nightly
-  - hhvm-3.3
-  - hhvm-3.6
-  - hhvm-3.9
-  - hhvm-3.12
-  - hhvm-nightly
 
 matrix:
     allow_failures:
-    - os: osx
     - php: nightly
     - php: hhvm
-    - php: hhvm-3.3
-    - php: hhvm-3.6
-    - php: hhvm-3.9
-    - php: hhvm-3.12
-    - php: hhvm-nightly
 
 os:
   - linux
-  - osx
 
 before_script:
  - wget http://getcomposer.org/composer.phar

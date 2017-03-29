@@ -21,6 +21,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 	class logFileWriteError extends \exception {};
 	class baseJSFileNotFoundExceptio extends \exception {};
 	class incompleteConfigurationException extends \exception {};
+	class alreadyInitializedException extends \exception {};
 
 	class csrfProtector
 	{
@@ -94,6 +95,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		public static function init($length = null, $action = null)
 		{
 			/*
+			 * Check if init has already been called.
+			 */
+			 if (count(self::$config) > 0) {
+				 throw new alreadyInitializedException("OWASP CSRFProtector: library was already initialized.");
+			 }
+
+			/*
 			 * if mod_csrfp already enabled, no verification, no filtering
 			 * Already done by mod_csrfp
 			 */
@@ -150,7 +158,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			self::authorizePost();
 
 			// Initialize output buffering handler
-			ob_start('csrfProtector::ob_handler');
+			if (!defined('__TESTING_CSRFP__'))
+				ob_start('csrfProtector::ob_handler');
 
 			if (!isset($_COOKIE[self::$config['CSRFP_TOKEN']])
 				|| !isset($_SESSION[self::$config['CSRFP_TOKEN']])
