@@ -7,4 +7,9 @@
     <testsuite name="OWASP CSRF Protector php">
         <directory>./test/csrfprotector_test.php</directory>
     </testsuite>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+        <file>libs/csrf/csrfprotector.php</file>
+        </whitelist>
+    </filter>
 </phpunit>
