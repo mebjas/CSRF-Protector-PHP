@@ -17,9 +17,17 @@ matrix:
 os:
   - linux
 
+install:
+  # Install composer packages, will also trigger dump-autoload
+  - composer install --no-interaction
+  # Install coveralls.phar
+  - wget -c -nc --retry-connrefused --tries=0 https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
+  - chmod +x coveralls.phar
+  - php coveralls.phar --version
+
 before_script:
- - wget http://getcomposer.org/composer.phar
- - php composer.phar install --dev --no-interaction
+    - mkdir -p build/logs
+    - ls -al
 
 script:
  - mkdir -p build/logs
@@ -29,4 +37,9 @@ after_script:
  - php vendor/bin/coveralls -v
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+ - travis_retry php coveralls.phar -v
+
+cache:
+  directories:
+  - vendor
+  - $HOME/.cache/composer
