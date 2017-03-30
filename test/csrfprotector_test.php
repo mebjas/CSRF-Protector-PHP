@@ -81,13 +81,15 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     /**
      * @var log directory for testing
      */
-    private $logDir = __DIR__ .'/logs';
+    private $logDir;
 
     /**
      * Function to be run before every test*() functions.
      */
     public function setUp()
     {
+        $this->logDir = __DIR__ .'/logs';
+
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         csrfprotector::$config['secureCookie'] = false;
