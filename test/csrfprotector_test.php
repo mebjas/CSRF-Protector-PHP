@@ -420,20 +420,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('getCurrentUrl');
         $method->setAccessible(true);
-        $this->assertEquals($method->invoke(null, []), "http://test/index.php");
+        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
 
         $tmp_request_scheme = $_SERVER['REQUEST_SCHEME'];
         unset($_SERVER['REQUEST_SCHEME']);
 
         // server-https is not set
-        $this->assertEquals($method->invoke(null, []), "http://test/index.php");
+        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
 
         $_SERVER['HTTPS'] = 'on';
-        $this->assertEquals($method->invoke(null, []), "https://test/index.php");
+        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
         unset($_SERVER['HTTPS']);
 
         $_SERVER['REQUEST_SCHEME'] = "https";
-        $this->assertEquals($method->invoke(null, []), "https://test/index.php");
+        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
 
         $_SERVER['REQUEST_SCHEME'] = $tmp_request_scheme;
     }
@@ -448,7 +448,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $method->setAccessible(true);
 
         try {
-            $method->invoke(null, []);
+            $method->invoke(null, array());
             $this->fail("logFileWriteError was not caught");
         } catch (Exception $ex) {
             // pass
@@ -457,7 +457,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         if (!is_dir($this->logDir))
             mkdir($this->logDir);
-        $method->invoke(null, []);
+        $method->invoke(null, array());
         $this->assertTrue(file_exists($this->logDir ."/" .date("m-20y") .".log"));
     }
 
