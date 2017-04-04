@@ -356,10 +356,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($token1 == $token2);
         $this->assertEquals(strlen($token1), 20);
+        $this->assertRegExp('/^[a-z0-9]{20}$/', $token1);
 
         csrfprotector::$config['tokenLength'] = 128;
         $token = csrfprotector::generateAuthToken();
         $this->assertEquals(strlen($token), 128);
+        $this->assertRegExp('/^[a-z0-9]{128}$/', $token);
     }
 
     /**
