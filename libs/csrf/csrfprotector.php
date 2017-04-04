@@ -354,7 +354,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		public static function generateAuthToken()
 		{
 			// todo - make this a member method / configurable
-			$randLength = 32;
+			$randLength = 64;
 			
 			//if config tokenLength value is 0 or some non int
 			if (intval(self::$config['tokenLength']) == 0) {
@@ -363,10 +363,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			//#todo - if $length > 128 throw exception 
 
-			if (function_exists("hash_algos")
-			    && function_exists("openssl_random_pseudo_bytes")
-			    && in_array("sha512", hash_algos())) {
-				$token = hash("sha512", openssl_random_pseudo_bytes ($randLength));
+			if (function_exists("random_bytes")) {
+				$token = bin2hex(random_bytes($randLength));
+			} elseif (function_exists("openssl_random_pseudo_bytes")) {
+				$token = bin2hex(openssl_random_pseudo_bytes($randLength));
 			} else {
 				$token = '';
 				for ($i = 0; $i < 128; ++$i) {
