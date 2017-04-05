@@ -343,7 +343,6 @@ function csrfprotector_init() {
 		if (window.attachEvent) {
 			document.links[i].attachEvent("onmousedown", function() {
 				var href = window.event.srcElement.href;
-				aler(href);
 				if(typeof href === "string")
 				{
 					var urlDisect = href.split('#');
