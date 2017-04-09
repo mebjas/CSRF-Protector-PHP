@@ -40,25 +40,24 @@ csrfProtector::init();
 ```
 simply include the library and call the `init()` function!
 
-###Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
-###More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
+### Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
 
-###Contribute
+### More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
+
+### Contribute
 
 * Fork the repo
 * Create your branch
 * Commit your changes
 * Create a pull request
 
-
-
-###Note
+### Note
 This version (`master`) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our [nojs version](https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support)
 
-##Join Discussions on mailing list
-[link to mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
+## Discussion
+Join Discussions on the [mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
 
-for any other queries contact me at: **minhaz@owasp.org**
+For any other queries contact me at: **minhaz@owasp.org**
 
 ### FAQ:
 1. What happens if token expires? - https://github.com/mebjas/CSRF-Protector-PHP/wiki/what-if-token-expires
