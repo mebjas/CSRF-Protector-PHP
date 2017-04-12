@@ -207,7 +207,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 					//action in case of failed validation
 					self::failedValidationAction();			
-				} else if(!(self::$config['reuseTokens'])) {
+				} else {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			} else if (!static::isURLallowed()) {
@@ -220,7 +220,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 					//action in case of failed validation
 					self::failedValidationAction();			
-				} else if(!(self::$config['reuseTokens'])) {
+				} else {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			}	
