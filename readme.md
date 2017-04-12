@@ -1,6 +1,6 @@
 CSRF Protector
 ==========================
-[![Todo Status](http://todofy.org/b/mebjas/CSRF-Protector-PHP)](http://todofy.org/r/mebjas/CSRF-Protector-PHP) [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP) [![Coverage Status](https://coveralls.io/repos/mebjas/CSRF-Protector-PHP/badge.png?branch=master)](https://coveralls.io/r/mebjas/CSRF-Protector-PHP?branch=master) 
+[![Todo Status](http://todofy.org/b/mebjas/CSRF-Protector-PHP)](http://todofy.org/r/mebjas/CSRF-Protector-PHP) [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP)  [![codecov](https://codecov.io/gh/mebjas/CSRF-Protector-PHP/branch/master/graph/badge.svg)](https://codecov.io/gh/mebjas/CSRF-Protector-PHP)
 <br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app. 
 
 Add to your project using packagist
@@ -40,25 +40,24 @@ csrfProtector::init();
 ```
 simply include the library and call the `init()` function!
 
-###Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
-###More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
+### Detailed information @[Project wiki on github](https://github.com/mebjas/CSRF-Protector-PHP/wiki)
 
-###Contribute
+### More information @[OWASP wiki](https://www.owasp.org/index.php/CSRFProtector_Project)
+
+### Contribute
 
 * Fork the repo
 * Create your branch
 * Commit your changes
 * Create a pull request
 
-
-
-###Note
+### Note
 This version (`master`) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our [nojs version](https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support)
 
-##Join Discussions on mailing list
-[link to mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
+## Discussion
+Join Discussions on the [mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
 
-for any other queries contact me at: **minhaz@owasp.org**
+For any other queries contact me at: **minhaz@owasp.org**
 
 ### FAQ:
 1. What happens if token expires? - https://github.com/mebjas/CSRF-Protector-PHP/wiki/what-if-token-expires

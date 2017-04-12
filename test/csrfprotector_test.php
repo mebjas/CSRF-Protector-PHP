@@ -48,6 +48,22 @@ class csrfp_wrapper extends csrfprotector
             }
         }
         return $hvalue;
+    } 
+}
+
+/**
+ * helper methods
+ */
+class Helper {
+    /**
+     * Function to recusively delete a dir
+     */
+    public static function delTree($dir) { 
+        $files = array_diff(scandir($dir), array('.','..')); 
+        foreach ($files as $file) { 
+            (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
+        } 
+        return rmdir($dir); 
     }
 }
 
@@ -63,15 +79,21 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     protected $config = array();
 
     /**
+     * @var log directory for testing
+     */
+    private $logDir;
+
+    /**
      * Function to be run before every test*() functions.
      */
     public function setUp()
     {
+        $this->logDir = __DIR__ .'/logs';
+
         csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         csrfprotector::$config['secureCookie'] = false;
-
-
+        csrfprotector::$config['logDirectory'] = '../test/logs';
 
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
         $_SERVER['REQUEST_SCHEME'] = 'http';    // For authorizePost
@@ -85,10 +107,10 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
         $_SERVER['HTTPS'] = null;
 
-        $this->config = include(__DIR__ .'/../libs/config.sample.php');
+        $this->config = include(__DIR__ .'/config.test.php');
 
         // Create an instance of config file -- for testing
-        $data = file_get_contents(__DIR__ .'/../libs/config.sample.php');
+        $data = file_get_contents(__DIR__ .'/config.test.php');
         file_put_contents(__DIR__ .'/../libs/config.php', $data);
 
         if (!defined('__TESTING_CSRFP__')) define('__TESTING_CSRFP__', true);
@@ -100,6 +122,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function tearDown()
     {
         unlink(__DIR__ .'/../libs/config.php');
+        if (is_dir(__DIR__ .'/logs'))
+            Helper::delTree(__DIR__ .'/logs');
     }
 
     /**
@@ -332,10 +356,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($token1 == $token2);
         $this->assertEquals(strlen($token1), 20);
+        $this->assertRegExp('/^[a-z0-9]{20}$/', $token1);
 
         csrfprotector::$config['tokenLength'] = 128;
         $token = csrfprotector::generateAuthToken();
         $this->assertEquals(strlen($token), 128);
+        $this->assertRegExp('/^[a-z0-9]{128}$/', $token);
     }
 
     /**
@@ -393,7 +419,25 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testgetCurrentUrl()
     {
-        $this->markTestSkipped('Cannot test private methods');
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('getCurrentUrl');
+        $method->setAccessible(true);
+        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+
+        $tmp_request_scheme = $_SERVER['REQUEST_SCHEME'];
+        unset($_SERVER['REQUEST_SCHEME']);
+
+        // server-https is not set
+        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+
+        $_SERVER['HTTPS'] = 'on';
+        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+        unset($_SERVER['HTTPS']);
+
+        $_SERVER['REQUEST_SCHEME'] = "https";
+        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+
+        $_SERVER['REQUEST_SCHEME'] = $tmp_request_scheme;
     }
 
     /**
@@ -401,7 +445,22 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testLoggingException()
     {
-        $this->markTestSkipped('Cannot test private methods');
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        try {
+            $method->invoke(null, array());
+            $this->fail("logFileWriteError was not caught");
+        } catch (Exception $ex) {
+            // pass
+            $this->assertTrue(true);
+        }
+
+        if (!is_dir($this->logDir))
+            mkdir($this->logDir);
+        $method->invoke(null, array());
+        $this->assertTrue(file_exists($this->logDir ."/" .date("m-20y") .".log"));
     }
 
     /**
@@ -439,10 +498,37 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         putenv('mod_csrfp_enabled=true');
         $temp = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc');
+
+        csrfProtector::$config = array();
         csrfProtector::init();
 
-        // Assuming no cookie change
-        $this->assertTrue($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
-        $this->assertTrue($temp == $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']]);
+        // Assuming no config was added
+        $this->assertTrue(count(csrfProtector::$config) == 0);
+        
+        // unset the env variable
+        putenv('mod_csrfp_enabled');
+    }
+
+    /**
+     * Test for exception thrown when init() method is called multiple times
+     */
+    public function testMultipleInitializeException()
+    {
+        csrfProtector::$config = array();
+        $this->assertTrue(count(csrfProtector::$config) == 0);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfProtector::init();
+
+        $this->assertTrue(count(csrfProtector::$config) == 11);
+        try {
+            csrfProtector::init();
+            $this->fail("alreadyInitializedException not raised");
+        }  catch (alreadyInitializedException $ex) {
+            // pass
+            $this->assertTrue(true);
+        } catch (Exception $ex) {
+            $this->fail("exception other than alreadyInitializedException failed");            
+        }
     }
 }
