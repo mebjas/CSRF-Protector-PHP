@@ -90,7 +90,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $this->logDir = __DIR__ .'/logs';
 
-        csrfprotector::$config['jsPath'] = '../js/csrfprotector.js';
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
         csrfprotector::$config['secureCookie'] = false;
         csrfprotector::$config['logDirectory'] = '../test/logs';

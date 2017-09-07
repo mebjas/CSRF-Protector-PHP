@@ -13,7 +13,6 @@ CSRFProtector configuration
 
  - `errorRedirectionPage`: **Absolute url** of the file to which user should be redirected. <br>**Default: null**
  - `customErrorMessage`: **Error Message** to be shown to user. Only this text will be shown!<br>**Default: null**
- - `jsPath`: location of the js file **relative** to `config.php`. <br>**Default:** `../js/csrfprotector.js`
  - `jsUrl`: **Absolute url** of the js file. (See [Setting up](https://github.com/mebjas/CSRF-Protector-PHP/wiki/Setting-up-CSRF-Protector-PHP-in-your-web-application) for more information)
  - `tokenLength`: length of csrfp token, Default `10`
  - `secureCookie`: sets the "secure" HTTPS flag on the cookie. <br>**Default: `false`**

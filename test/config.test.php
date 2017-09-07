@@ -4,7 +4,6 @@
  * Necessary configurations are (library would throw exception otherwise)
  * ---- logDirectory
  * ---- failedAuthAction
- * ---- jsPath
  * ---- jsUrl
  * ---- tokenLength
  */
@@ -16,7 +15,6 @@ return array(
 		"POST" => 0),
 	"errorRedirectionPage" => "",
 	"customErrorMessage" => "",
-	"jsPath" => "../js/csrfprotector.js",
 	"jsUrl" => "http://localhost/csrfp/js/csrfprotector.js",
 	"tokenLength" => 10,
 	"secureCookie" => false,

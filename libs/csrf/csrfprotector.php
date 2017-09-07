@@ -72,7 +72,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Contains list of those parameters that are required to be there
 		 * 	in config file for csrfp to work
 		 */
-		public static $requiredConfigurations  = array('logDirectory', 'failedAuthAction', 'jsPath', 'jsUrl', 'tokenLength');
+		public static $requiredConfigurations  = array('logDirectory', 'failedAuthAction', 'jsUrl', 'tokenLength');
 		
 		/*
 		 *	Function: init
