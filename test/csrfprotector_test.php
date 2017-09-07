@@ -519,7 +519,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         csrfProtector::init();
 
-        $this->assertTrue(count(csrfProtector::$config) == 11);
+        $this->assertTrue(count(csrfProtector::$config) == 10);
         try {
             csrfProtector::init();
             $this->fail("alreadyInitializedException not raised");
@@ -527,7 +527,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
             // pass
             $this->assertTrue(true);
         } catch (Exception $ex) {
-            $this->fail("exception other than alreadyInitializedException failed");            
+            $this->fail("exception other than alreadyInitializedException failed");
         }
     }
 }
