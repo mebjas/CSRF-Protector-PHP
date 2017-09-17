@@ -26,6 +26,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 	class csrfProtector
 	{
 		/*
+		 * application/json content type
+		 */
+		const JSONCONTENTTYPE = "application/json";
+
+		/*
 		 * Variable: $cookieExpiryTime
 		 * expiry time for cookie
 		 * @var int
@@ -195,14 +200,30 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				//set request type to POST
 				self::$requestType = "POST";
 
+				$token = (isset($_POST[self::$config['CSRFP_TOKEN']]))
+					? $_POST[self::$config['CSRFP_TOKEN']] : false;
+
+				if ($_SERVER["CONTENT_TYPE"] === self::JSONCONTENTTYPE) {
+					try {
+						$request_body = file_get_contents('php://input');
+						$request_body = json_decode($request_body, true);
+						if (isset($request_body[self::$config['CSRFP_TOKEN']])) {
+							$token = $request_body[self::$config['CSRFP_TOKEN']];
+						}
+					} catch (Exception $ex) {
+						// silently absorb this exception
+						// it could be because IO is blocked or json decode fails
+						// either way log it or add some handleing
+						// TODO ^^
+					}
+				}
+
 				//currently for same origin only
-				if (!(isset($_POST[self::$config['CSRFP_TOKEN']]) 
-					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-					&& (self::isValidToken($_POST[self::$config['CSRFP_TOKEN']]))
-					)) {
+				if (!($token && isset($_SESSION[self::$config['CSRFP_TOKEN']])
+					&& (self::isValidToken($token)))) {
 
 					//action in case of failed validation
-					self::failedValidationAction();			
+					self::failedValidationAction();
 				} else {
 					self::refreshToken();	//refresh token for successfull validation
 				}
