@@ -8,12 +8,13 @@ php:
   - hhvm
   - nightly
   - "5.3"
-    dist: precise
+
 
 matrix:
     allow_failures:
     - php: nightly
     - php: hhvm
+    - php: 5.3
 
 os:
   - linux
