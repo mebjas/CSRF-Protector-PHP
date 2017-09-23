@@ -289,55 +289,18 @@ function csrfprotector_init() {
 	 */
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
-			if (data !== null && typeof data === 'object') {
-				data[CSRFP.CSRFP_TOKEN] = CSRFP._getAuthKey();
-			} else {
-				// Added support for content type == application / json
-				if (this.headers && 'Content-Type' in this.headers
-					&& this.headers['Content-Type'] === 'application/json') {
-					try {
-						data = JSON.parse(data)
-						data[CSRFP.CSRFP_TOKEN] = CSRFP._getAuthKey();
-						return this.old_send(JSON.stringify(data));
-						
-					} catch (ex) {
-						console.log("[ERROR] [CSRF Protector] Unable to parse content ",
-							"when content-type is application/json", ex);
-					}
-				}
-
-				if (typeof data != "undefined") {
-					data += "&";
-				} else {
-					data = "";
-				}
-				data += CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-			}
+			// attach the token in request header
+			this.setRequestHeader(CSRFP.CSRFP_TOKEN, CSRFP._getAuthKey());
 		}
 		return this.old_send(data);
-	}
-
-	/**
-	 * Wrapper method to override setRequestHeader method of
-	 * XMLHttpRequests
-	 * @param: header - header name
-	 * @param: value - header value
-	 */
-	function new_setRequestHeader(header, value) {
-		if (!this.headers) this.headers = {};
-		this.headers[header] = value;
-
-		this.old_setRequestHeader(header, value);
 	}
 
 	if (window.XMLHttpRequest) {
 		// Wrapping
 		XMLHttpRequest.prototype.old_send = XMLHttpRequest.prototype.send;
 		XMLHttpRequest.prototype.old_open = XMLHttpRequest.prototype.open;
-		XMLHttpRequest.prototype.old_setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 		XMLHttpRequest.prototype.open = new_open;
 		XMLHttpRequest.prototype.send = new_send;
-		XMLHttpRequest.prototype.setRequestHeader = new_setRequestHeader;
 	}
 	if (typeof ActiveXObject !== 'undefined') {
 		ActiveXObject.prototype.old_send = ActiveXObject.prototype.send;

@@ -1,5 +1,4 @@
 <?php
-
 if (!defined('__CSRF_PROTECTOR__')) {
 	define('__CSRF_PROTECTOR__', true); 	// to avoid multiple declaration errors
 
@@ -159,6 +158,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				}
 			}
 
+			// TODO: initialize the setcookie params, based on config;
+
 			// Authorise the incoming request
 			self::authorizePost();
 
@@ -200,22 +201,12 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				//set request type to POST
 				self::$requestType = "POST";
 
-				$token = (isset($_POST[self::$config['CSRFP_TOKEN']]))
-					? $_POST[self::$config['CSRFP_TOKEN']] : false;
-
-				if ($_SERVER["CONTENT_TYPE"] === self::JSONCONTENTTYPE) {
-					try {
-						$request_body = file_get_contents('php://input');
-						$request_body = json_decode($request_body, true);
-						if (isset($request_body[self::$config['CSRFP_TOKEN']])) {
-							$token = $request_body[self::$config['CSRFP_TOKEN']];
-						}
-					} catch (Exception $ex) {
-						// silently absorb this exception
-						// it could be because IO is blocked or json decode fails
-						// either way log it or add some handleing
-						// TODO ^^
-					}
+				// look for token in header, then in payload
+				$token = false;
+				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
+					$token = apache_request_headers()[self::$config['CSRFP_TOKEN']];
+				} else if (isset($_POST[self::$config['CSRFP_TOKEN']])) {
+					$token = $_POST[self::$config['CSRFP_TOKEN']];
 				}
 
 				//currently for same origin only
@@ -353,6 +344,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			array_push($_SESSION[self::$config['CSRFP_TOKEN']], $token);
 
 			//set token to cookie for client side processing
+			// TODO: all the params must be loaded from config
 			setcookie(self::$config['CSRFP_TOKEN'], 
 				$token, 
 				time() + self::$cookieExpiryTime,
