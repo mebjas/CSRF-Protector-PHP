@@ -91,7 +91,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->logDir = __DIR__ .'/logs';
 
         csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
-        csrfprotector::$config['secureCookie'] = false;
+        csrfprotector::$config['cookieConfig'] = array('secure' => false);
         csrfprotector::$config['logDirectory'] = '../test/logs';
 
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
@@ -143,6 +143,35 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Function to check cookieconfig class
+     */
+    public function testCookieConfigClass() {
+        $cfg = array(
+            "path" => "abcd",
+            "secure" => true,
+            "domain" => "abcd",
+        );
+
+        // simple test
+        $cookieConfig = new cookieConfig($cfg);
+        $this->assertEquals($cookieConfig->path, "abcd");
+        $this->assertEquals($cookieConfig->domain, "abcd");
+        $this->assertEquals($cookieConfig->secure, true);
+
+        // default value test
+        $cookieConfig = new cookieConfig(array());
+        $this->assertEquals($cookieConfig->path, '');
+        $this->assertEquals($cookieConfig->domain, '');
+        $this->assertEquals($cookieConfig->secure, false);
+
+        // secure as string
+        $cookieConfig = new cookieConfig(array('secure' => 'true'));
+        $this->assertEquals($cookieConfig->secure, true);
+        $cookieConfig = new cookieConfig(array('secure' => 'false'));
+        $this->assertEquals($cookieConfig->secure, true);
+    }
+
+    /**
      * test secure flag is set in the token cookie when requested
      */
     public function testSecureCookie()
@@ -150,11 +179,11 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
 
-        csrfprotector::$config['secureCookie'] = false;
+        csrfprotector::$config['cookieConfig'] = array('secure' => false);
         csrfprotector::refreshToken();
         $this->assertNotRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
 
-        csrfprotector::$config['secureCookie'] = true;
+        csrfprotector::$config['cookieConfig'] = array('secure' => true);
         csrfprotector::refreshToken();
         $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
     }
