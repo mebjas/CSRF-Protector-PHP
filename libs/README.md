@@ -15,6 +15,6 @@ CSRFProtector configuration
  - `customErrorMessage`: **Error Message** to be shown to user. Only this text will be shown!<br>**Default: null**
  - `jsUrl`: **Absolute url** of the js file. (See [Setting up](https://github.com/mebjas/CSRF-Protector-PHP/wiki/Setting-up-CSRF-Protector-PHP-in-your-web-application) for more information)
  - `tokenLength`: length of csrfp token, Default `10`
- - `secureCookie`: sets the "secure" HTTPS flag on the cookie. <br>**Default: `false`**
+ - `cookieConfig`: Array of parameter values for set cookie method.  supports three properties: `path`, `domain`, `secure`. They have same meaning as respective parameters of `setcookie` method: [learn more - php.net]
  - `disabledJavascriptMessage`: messaged to be shown if js is disabled (string)
  - `verifyGetFor`: regex rules for those urls for which csrfp validation should be enabled for `GET` requests also. (View [verifyGetFor rules](https://github.com/mebjas/CSRF-Protector-PHP/wiki/verifyGetFor-rules) for more information)

@@ -23,6 +23,47 @@ if (!defined('__CSRF_PROTECTOR__')) {
 	class incompleteConfigurationException extends \exception {};
 	class alreadyInitializedException extends \exception {};
 
+	/**
+	 * Cookie config class
+	 */
+	class cookieConfig
+	{
+		/**
+		 * Variable: $path
+		 * path parameter for setcookie method
+		 * @var string
+		 */
+		public $path = '';
+
+		/**
+		 * Variable: $domain
+		 * domain parameter for setcookie method
+		 * @var string
+		 */
+		public $domain = '';
+
+		/**
+		 * Variable: $secure
+		 * secure parameter for setcookie method
+		 * @var bool
+		 */
+		public $secure = false;
+
+		/**
+		 * Function: constructor
+		 * 
+		 * Parameters:
+		 * $cfg - config array loaded from config file;
+		 */
+		function __construct($cfg) {
+			if ($cfg !== null) {
+				if (isset($cfg['path'])) $this->path = $cfg['path'];
+				if (isset($cfg['domain'])) $this->domain = $cfg['domain'];
+				if (isset($cfg['secure'])) $this->secure = (bool) $cfg['secure'];
+			}
+		}
+	}
+
 	class csrfProtector
 	{
 		/*
@@ -45,6 +86,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * @var bool
 		 */
 		private static $isValidHTML = false;
+
+		/**
+		 * Variable: $cookieConfig
+		 * Array of parameters for the setcookie method
+		 * @var cookieConfig;
+		 */
+		private static $cookieConfig = null;
 
 		/*
 		 * Variable: $requestType
@@ -139,6 +187,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			if (self::$config['CSRFP_TOKEN'] == '')
 				self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
+
+			// load parameters for setcookie method
+			if (!isset(self::$config['cookieConfig']))
+				self::$config['cookieConfig'] = array();
+			self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 
 			// Validate the config if everythings filled out
 			// TODO: collect all missing values and throw exception together
@@ -328,16 +381,23 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				|| !is_array($_SESSION[self::$config['CSRFP_TOKEN']]))
 				$_SESSION[self::$config['CSRFP_TOKEN']] = array();
 
-			//set token to session for server side validation
+			// set token to session for server side validation
 			array_push($_SESSION[self::$config['CSRFP_TOKEN']], $token);
 
-			//set token to cookie for client side processing
-			setcookie(self::$config['CSRFP_TOKEN'], 
+			// set token to cookie for client side processing
+			if (self::$cookieConfig === null) {
+				if (!isset(self::$config['cookieConfig']))
+					self::$config['cookieConfig'] = array();
+				self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
+			}
+
+			setcookie(
+				self::$config['CSRFP_TOKEN'], 
 				$token, 
 				time() + self::$cookieExpiryTime,
-				'',
-				'',
-				(array_key_exists('secureCookie', self::$config) ? (bool)self::$config['secureCookie'] : false));
+				self::$cookieConfig->path,
+				self::$cookieConfig->domain,
+				(bool) self::$cookieConfig->secure);
 		}
 
 		/*
