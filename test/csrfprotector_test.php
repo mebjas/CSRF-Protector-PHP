@@ -179,16 +179,19 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
 
-        csrfprotector::$config['cookieConfig'] = array('secure' => false);
-        csrfprotector::refreshToken();
-        $this->assertNotRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
-
         // this one would generally fails, as init was already called and now private static
         // property is set with secure as false;
         $csrfp = new csrfProtector;
         $reflection = new \ReflectionClass(get_class($csrfp));
         $property = $reflection->getProperty('cookieConfig');
         $property->setAccessible(true);
+
+        // change value to false
+        $property->setValue($csrfp, new cookieConfig(array('secure' => false)));
+        csrfprotector::refreshToken();
+        $this->assertNotRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
+
+        // change value to true
         $property->setValue($csrfp, new cookieConfig(array('secure' => true)));
         csrfprotector::refreshToken();
         $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
