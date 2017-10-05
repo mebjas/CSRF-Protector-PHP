@@ -388,11 +388,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (self::$cookieConfig === null) {
 				if (!isset(self::$config['cookieConfig']))
 					self::$config['cookieConfig'] = array();
-
 				self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 			}
 
-			setcookie(self::$config['CSRFP_TOKEN'], 
+			setcookie(
+				self::$config['CSRFP_TOKEN'], 
 				$token, 
 				time() + self::$cookieExpiryTime,
 				self::$cookieConfig->path,
