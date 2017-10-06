@@ -350,11 +350,10 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * test authorise success
+     * test authorise success with token in $_POST
      */
     public function testAuthorisePost_success()
     {
-
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST[csrfprotector::$config['CSRFP_TOKEN']]
             = $_GET[csrfprotector::$config['CSRFP_TOKEN']]
@@ -380,6 +379,34 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
         $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
         // $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
+    }
+
+    /**
+     * test authorise success with token in header
+     */
+    public function testAuthorisePost_success_2()
+    {
+        unset($_POST[csrfprotector::$config['CSRFP_TOKEN']]);
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $serverKey = 'HTTP_' .strtoupper(csrfprotector::$config['CSRFP_TOKEN']);
+        $serverKey = str_replace('-', '_', $serverKey);
+
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('tokenHeaderKey');
+        $property->setAccessible(true);
+        // change value to false
+        $property->setValue($csrfp, $serverKey);
+
+        $_SERVER[$serverKey] = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0];
+        $temp = $_SESSION[csrfprotector::$config['CSRFP_TOKEN']];
+
+        csrfprotector::authorizePost(); //will create new session and cookies
+        $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
+        $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        // $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
+ 
     }
 
     /**

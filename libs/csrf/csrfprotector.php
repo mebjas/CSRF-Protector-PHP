@@ -66,11 +66,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 	class csrfProtector
 	{
 		/*
-		 * application/json content type
-		 */
-		const JSONCONTENTTYPE = "application/json";
-
-		/*
 		 * Variable: $cookieExpiryTime
 		 * expiry time for cookie
 		 * @var int
@@ -94,9 +89,16 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		/**
 		 * Variable: $cookieConfig
 		 * Array of parameters for the setcookie method
-		 * @var cookieConfig;
+		 * @var array<any>
 		 */
 		private static $cookieConfig = null;
+
+		/**
+		 * Variable: $tokenHeaderKey
+		 * Key value in header array, which contain the token
+		 * @var string
+		 */
+		private static $tokenHeaderKey = null;
 
 		/*
 		 * Variable: $requestType
@@ -192,6 +194,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (self::$config['CSRFP_TOKEN'] == '')
 				self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
 
+			self::$tokenHeaderKey = 'HTTP_' .strtoupper(self::$config['CSRFP_TOKEN']);
+			self::$tokenHeaderKey = str_replace('-', '_', self::$tokenHeaderKey);
+
 			// load parameters for setcookie method
 			if (!isset(self::$config['cookieConfig']))
 				self::$config['cookieConfig'] = array();
@@ -210,8 +215,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					exit;
 				}
 			}
-
-			// TODO: initialize the setcookie params, based on config;
 
 			// Authorise the incoming request
 			self::authorizePost();
@@ -267,7 +270,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			} else if (!static::isURLallowed()) {
-				
 				//currently for same origin only
 				if (!(isset($_GET[self::$config['CSRFP_TOKEN']]) 
 					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
@@ -293,7 +295,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * any (string / bool) - token retrieved from header or form payload
 		 */
 		private static function getTokenFromRequest() {
-			// look for token in header, then in payload
+			// look for in $_POST, then header
 			if (isset($_POST[self::$config['CSRFP_TOKEN']])) {
 				return $_POST[self::$config['CSRFP_TOKEN']];
 			}
@@ -302,12 +304,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
 					return apache_request_headers()[self::$config['CSRFP_TOKEN']];
 				}
-			} else {
-				$serverKey = 'HTTP_' .strtoupper(self::$config['CSRFP_TOKEN']);
-				$serverKey = str_replace('-', '_', $serverKey);
-				if (isset($_SERVER[$serverKey])) {
-					return $_SERVER[$serverKey];
-				}
+			}
+
+			if (self::$tokenHeaderKey === null) return false;
+			if (isset($_SERVER[self::$tokenHeaderKey])) {
+				return $_SERVER[self::$tokenHeaderKey];
 			}
 
 			return false;
