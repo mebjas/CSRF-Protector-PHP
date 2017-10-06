@@ -289,16 +289,8 @@ function csrfprotector_init() {
 	 */
 	function new_send(data) {
 		if (this.method.toLowerCase() === 'post') {
-			if (data !== null && typeof data === 'object') {
-				data.append(CSRFP.CSRFP_TOKEN, CSRFP._getAuthKey());
-			} else {
-				if (typeof data != "undefined") {
-					data += "&";
-				} else {
-					data = "";
-				}
-				data += CSRFP.CSRFP_TOKEN +"=" +CSRFP._getAuthKey();
-			}
+			// attach the token in request header
+			this.setRequestHeader(CSRFP.CSRFP_TOKEN, CSRFP._getAuthKey());
 		}
 		return this.old_send(data);
 	}

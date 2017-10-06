@@ -1,5 +1,4 @@
 <?php
-
 if (!defined('__CSRF_PROTECTOR__')) {
 	define('__CSRF_PROTECTOR__', true); 	// to avoid multiple declaration errors
 
@@ -90,9 +89,16 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		/**
 		 * Variable: $cookieConfig
 		 * Array of parameters for the setcookie method
-		 * @var cookieConfig;
+		 * @var array<any>
 		 */
 		private static $cookieConfig = null;
+
+		/**
+		 * Variable: $tokenHeaderKey
+		 * Key value in header array, which contain the token
+		 * @var string
+		 */
+		private static $tokenHeaderKey = null;
 
 		/*
 		 * Variable: $requestType
@@ -188,6 +194,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (self::$config['CSRFP_TOKEN'] == '')
 				self::$config['CSRFP_TOKEN'] = CSRFP_TOKEN;
 
+			self::$tokenHeaderKey = 'HTTP_' .strtoupper(self::$config['CSRFP_TOKEN']);
+			self::$tokenHeaderKey = str_replace('-', '_', self::$tokenHeaderKey);
+
 			// load parameters for setcookie method
 			if (!isset(self::$config['cookieConfig']))
 				self::$config['cookieConfig'] = array();
@@ -248,19 +257,19 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				//set request type to POST
 				self::$requestType = "POST";
 
+				// look for token in payload else from header
+				$token = self::getTokenFromRequest();
+
 				//currently for same origin only
-				if (!(isset($_POST[self::$config['CSRFP_TOKEN']]) 
-					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
-					&& (self::isValidToken($_POST[self::$config['CSRFP_TOKEN']]))
-					)) {
+				if (!($token && isset($_SESSION[self::$config['CSRFP_TOKEN']])
+					&& (self::isValidToken($token)))) {
 
 					//action in case of failed validation
-					self::failedValidationAction();			
+					self::failedValidationAction();
 				} else {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			} else if (!static::isURLallowed()) {
-				
 				//currently for same origin only
 				if (!(isset($_GET[self::$config['CSRFP_TOKEN']]) 
 					&& isset($_SESSION[self::$config['CSRFP_TOKEN']])
@@ -273,6 +282,36 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					self::refreshToken();	//refresh token for successfull validation
 				}
 			}	
+		}
+
+		/*
+		 * Fucntion: getTokenFromRequest
+		 * function to get token in case of POST request
+		 *
+		 * Parameters: 
+		 * void
+		 *
+		 * Returns: 
+		 * any (string / bool) - token retrieved from header or form payload
+		 */
+		private static function getTokenFromRequest() {
+			// look for in $_POST, then header
+			if (isset($_POST[self::$config['CSRFP_TOKEN']])) {
+				return $_POST[self::$config['CSRFP_TOKEN']];
+			}
+
+			if (function_exists('apache_request_headers')) {
+				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
+					return apache_request_headers()[self::$config['CSRFP_TOKEN']];
+				}
+			}
+
+			if (self::$tokenHeaderKey === null) return false;
+			if (isset($_SERVER[self::$tokenHeaderKey])) {
+				return $_SERVER[self::$tokenHeaderKey];
+			}
+
+			return false;
 		}
 
 		/*
