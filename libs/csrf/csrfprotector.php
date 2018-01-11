@@ -310,6 +310,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			if (isset($_SERVER[self::$tokenHeaderKey])) {
 				return $_SERVER[self::$tokenHeaderKey];
 			}
+			
+			if(isset($_COOKIE[self::$config['CSRFP_TOKEN']) {
+				return $_COOKIE[self::$config['CSRFP_TOKEN'];
+			}
 
 			return false;
 		}
