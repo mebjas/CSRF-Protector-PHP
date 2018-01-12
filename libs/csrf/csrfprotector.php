@@ -311,8 +311,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				return $_SERVER[self::$tokenHeaderKey];
 			}
 			
-			if(isset($_COOKIE[self::$config['CSRFP_TOKEN']) {
-				return $_COOKIE[self::$config['CSRFP_TOKEN'];
+			if (isset($_COOKIE[self::$config['CSRFP_TOKEN']])) {
+				return $_COOKIE[self::$config['CSRFP_TOKEN']];
 			}
 
 			return false;
