@@ -4,7 +4,7 @@
     "description": "CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app.",
     "keywords": ["security","csrf", "owasp"],
     "homepage": "https://github.com/mebjas/CSRF-Protector-PHP",
-    "license": "APACHE",
+    "license": "Apache-2.0",
     "require-dev": {
         "satooshi/php-coveralls": ">=0.6"
     },
