@@ -66,7 +66,7 @@ class Helper {
     public static function delTree($dir) { 
         $files = array_diff(scandir($dir), array('.','..')); 
         foreach ($files as $file) { 
-            (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
+            (is_dir("$dir/$file")) ? self::delTree("$dir/$file") : unlink("$dir/$file");
         } 
         return rmdir($dir); 
     }
@@ -214,7 +214,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
             csrfprotector::authorizePost();
         } catch (logDirectoryNotFoundException $ex) {
             $this->assertTrue(true);
-            return;;
+            return;
         }
         $this->fail('logDirectoryNotFoundException has not been raised.');
     }
@@ -542,21 +542,26 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['PHP_SELF'] = '/nodelete.php';
         $this->assertTrue(csrfprotector::isURLallowed());
 
+        // Test 'http://test/index.php'
         $_SERVER['PHP_SELF'] = '/index.php';
-        $this->assertTrue(csrfprotector::isURLallowed('http://test/index.php'));
+        $this->assertTrue(csrfprotector::isURLallowed());
 
+        // Test 'http://test/delete.php'
         $_SERVER['PHP_SELF'] = '/delete.php';
-        $this->assertFalse(csrfprotector::isURLallowed('http://test/delete.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // Test 'http://test/delete_users.php'
         $_SERVER['PHP_SELF'] = '/delete_user.php';
-        $this->assertFalse(csrfprotector::isURLallowed('http://test/delete_users.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // Test 'https://test/index.php'
         $_SERVER['REQUEST_SCHEME'] = 'https';
         $_SERVER['PHP_SELF'] = '/index.php';
-        $this->assertFalse(csrfprotector::isURLallowed('https://test/index.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // 'https://test/delete_users.php'
         $_SERVER['PHP_SELF'] = '/delete_user.php';
-        $this->assertFalse(csrfprotector::isURLallowed('https://test/delete_users.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
     }
 
     /**
@@ -565,7 +570,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testModCSRFPEnabledException()
     {
         putenv('mod_csrfp_enabled=true');
-        $temp = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
+        $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc');
 
         csrfProtector::$config = array();
