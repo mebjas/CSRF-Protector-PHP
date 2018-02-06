@@ -52,7 +52,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Function: constructor
 		 * 
 		 * Parameters:
-		 * $cfg - config array loaded from config file;
+		 * @param $cfg - config array loaded from config file;
 		 */
 		function __construct($cfg) {
 			if ($cfg !== null) {
@@ -102,7 +102,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Variable: $requestType
-		 * Varaible to store weather request type is post or get
+		 * Variable to store whether request type is post or get
 		 * @var string
 		 */
 		protected static $requestType = "GET";
@@ -202,7 +202,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				self::$config['cookieConfig'] = array();
 			self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 
-			// Validate the config if everythings filled out
+			// Validate the config if everything is filled out
 			// TODO: collect all missing values and throw exception together
 			foreach (self::$requiredConfigurations as $value) {
 				if (!isset(self::$config[$value]) || self::$config[$value] == '') {
@@ -267,7 +267,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			} else if (!static::isURLallowed()) {
 				//currently for same origin only
@@ -279,13 +279,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();			
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			}	
 		}
 
 		/*
-		 * Fucntion: getTokenFromRequest
+		 * Function: getTokenFromRequest
 		 * function to get token in case of POST request
 		 *
 		 * Parameters: 
@@ -544,7 +544,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Parameters: 
 		 * void
 		 *
-		 * Retruns: 
+		 * Returns:
 		 * void
 		 *
 		 * Throws: 
@@ -552,7 +552,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 */
 		protected static function logCSRFattack()
 		{
-			//if file doesnot exist for, create it
+			//if file does not exist for, create it
 			$logFile = fopen(__DIR__ ."/../" .self::$config['logDirectory']
 			."/" .date("m-20y") .".log", "a+");
 			
@@ -613,7 +613,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Function: isURLallowed
-		 * Function to check if a url mataches for any urls
+		 * Function to check if a url matches for any urls
 		 * Listed in config file
 		 *
 		 * Parameters: 

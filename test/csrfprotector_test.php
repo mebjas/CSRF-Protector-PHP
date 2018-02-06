@@ -56,7 +56,7 @@ class csrfp_wrapper extends csrfprotector
  */
 class Helper {
     /**
-     * Function to recusively delete a dir
+     * Function to recursively delete a dir
      */
     public static function delTree($dir) { 
         $files = array_diff(scandir($dir), array('.','..')); 
@@ -74,12 +74,12 @@ class Helper {
 class csrfp_test extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var to hold current configurations
+     * @var array to hold current configurations
      */
     protected $config = array();
 
     /**
-     * @var log directory for testing
+     * @var string log directory for testing
      */
     private $logDir;
 
