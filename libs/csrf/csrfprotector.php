@@ -212,7 +212,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 							$value
 						)
 					);
-					exit;
 				}
 			}
 
@@ -301,8 +300,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			}
 
 			if (function_exists('apache_request_headers')) {
-				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
-					return apache_request_headers()[self::$config['CSRFP_TOKEN']];
+                $apacheRequestHeaders = apache_request_headers();
+                if (isset($apacheRequestHeaders[self::$config['CSRFP_TOKEN']])) {
+					return $apacheRequestHeaders[self::$config['CSRFP_TOKEN']];
 				}
 			}
 
@@ -382,6 +382,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//redirect to custom error page
 					$location  = self::$config['errorRedirectionPage'];
 					header("location: $location");
+                    exit(self::$config['customErrorMessage']);
+                    break;
 				case 3:
 					//send custom error message
 					exit(self::$config['customErrorMessage']);
