@@ -1,2 +1,10 @@
 phpunit.phar
+coveralls.phar
+
 coverage/*
+vendor/*
+build/
+log/*.log
+
+.idea/*
+libs/config.php
