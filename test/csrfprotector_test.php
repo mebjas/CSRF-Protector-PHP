@@ -433,6 +433,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler()
     {
+        csrfprotector::$config['verifyGetFor'] = array();
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
@@ -449,10 +450,33 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $outLength = strlen($modifiedHTML);
 
         //Check if file has been modified
-        $this->assertFalse($outLength == $inpLength);
-        $this->assertTrue(strpos($modifiedHTML, '<noscript>') !== false);
-        $this->assertTrue(strpos($modifiedHTML, '<script') !== false);
+        $this->assertNotEquals($inpLength, $outLength);
+        $this->assertContains('<noscript>', $modifiedHTML);
+        $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME . '"', $modifiedHTML);
+        $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_URLS . '"', $modifiedHTML);
+        $this->assertContains('<script', $modifiedHTML);
+    }
 
+    /**
+     * test ob_handler_function
+     */
+    public function testob_handler_withoutClosedBodyTag()
+    {
+        csrfprotector::$config['verifyGetFor'] = array();
+        csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
+        csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
+
+        $testHTML = '<html>';
+        $testHTML .= '<head><title>1</title>';
+        $testHTML .= '<body onload="test()">';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '</head></html>';
+
+        $modifiedHTML = csrfprotector::ob_handler($testHTML, 0);
+
+        //Check if file has been modified
+        $this->assertStringEndsWith('</script>', $modifiedHTML);
     }
 
     /**
@@ -460,6 +484,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testob_handler_positioning()
     {
+        csrfprotector::$config['verifyGetFor'] = array();
         csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
         csrfprotector::$config['jsUrl'] = 'http://localhost/test/csrf/js/csrfprotector.js';
 
@@ -474,8 +499,33 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $modifiedHTML = csrfprotector::ob_handler($testHTML, 0);
 
         $this->assertEquals(strpos($modifiedHTML, '<body') + 23, strpos($modifiedHTML, '<noscript'));
-        // Check if content before </body> is </script> #todo
-        //$this->markTestSkipped('todo, add appropriate test here');
+        $this->assertContains('</script>' . PHP_EOL . '</body>', $modifiedHTML);
+    }
+
+    /**
+     * test ob_handler_function for output filter
+     */
+    public function testob_handler_withoutInjectedCSRFGuardScript()
+    {
+        csrfprotector::$config['verifyGetFor'] = array();
+        csrfprotector::$config['disabledJavascriptMessage'] = 'test message';
+        csrfprotector::$config['jsUrl'] = false;
+
+        $testHTML = '<html>';
+        $testHTML .= '<head><title>1</title>';
+        $testHTML .= '<body onload="test()">';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '-- some static content --';
+        $testHTML .= '</body>';
+        $testHTML .= '</head></html>';
+
+        $modifiedHTML = csrfprotector::ob_handler($testHTML, 0);
+
+        $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME . '"', $modifiedHTML);
+        $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_URLS . '"', $modifiedHTML);
+
+        $this->assertNotContains('<noscript', $modifiedHTML);
+        $this->assertNotContains('</script>' . PHP_EOL . '</body>', $modifiedHTML);
     }
 
     /**

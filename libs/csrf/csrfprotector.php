@@ -512,11 +512,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    // @priority: medium @labels: important @assign: mebjas
 		    // @deadline: 1 week
 
-		    //add a <noscript> message to outgoing HTML output,
-		    //informing the user to enable js for CSRFProtector to work
-		    //best section to add, after <body> tag
-		    $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
-		    	"</noscript>", $buffer);
+            if (self::$config['jsUrl']) {
+                //add a <noscript> message to outgoing HTML output,
+                //informing the user to enable js for CSRFProtector to work
+                //best section to add, after <body> tag
+                $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" . self::$config['disabledJavascriptMessage'] .
+                    "</noscript>", $buffer);
+            }
 
 		    $hiddenInput = '<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME.'" value="' 
 		    				.self::$config['CSRFP_TOKEN'] .'">' .PHP_EOL;
@@ -527,14 +529,17 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		    //implant hidden fields with check url information for reading in javascript
 	        $buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
 
-		    //implant the CSRFGuard js file to outgoing script
-		    $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>' . PHP_EOL;
-		    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
+            if (self::$config['jsUrl']) {
+                //implant the CSRFGuard js file to outgoing script
+                $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>';
+                $buffer = str_ireplace('</body>', $script . PHP_EOL . '</body>', $buffer, $count);
 
-		    if (!$count)
-		        $buffer .= $script;
+                // Add the script to the end if the body tag was not closed
+                if (!$count)
+                    $buffer .= $script;
+            }
 
-		    return $buffer;
+            return $buffer;
 		}
 
 		/*
