@@ -12,7 +12,8 @@ if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCas
 class csrfp_wrapper extends csrfprotector
 {
     /**
-     * Function to provide wrapper methode to set the protected var, requestType
+     * Function to provide wrapper method to set the protected var, requestType
+     * @param string $type
      */
     public static function changeRequestType($type)
     {
@@ -22,6 +23,8 @@ class csrfp_wrapper extends csrfprotector
     /**
      * Function to check for a string value anywhere within HTTP response headers
      * Returns true on first match of $needle in header names or values
+     * @param string $needle
+     * @return bool
      */
     public static function checkHeader($needle)
     {
@@ -36,6 +39,8 @@ class csrfp_wrapper extends csrfprotector
     /**
      * Function to return the string value of the last response header
      * identified by name $needle
+     * @param string $needle
+     * @return string
      */
     public static function getHeaderValue($needle)
     {
