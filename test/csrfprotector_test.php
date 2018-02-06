@@ -159,21 +159,21 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         // simple test
         $cookieConfig = new cookieConfig($cfg);
-        $this->assertEquals($cookieConfig->path, "abcd");
-        $this->assertEquals($cookieConfig->domain, "abcd");
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals("abcd", $cookieConfig->path);
+        $this->assertEquals("abcd", $cookieConfig->domain);
+        $this->assertEquals(true, $cookieConfig->secure);
 
         // default value test
         $cookieConfig = new cookieConfig(array());
-        $this->assertEquals($cookieConfig->path, '');
-        $this->assertEquals($cookieConfig->domain, '');
-        $this->assertEquals($cookieConfig->secure, false);
+        $this->assertEquals('', $cookieConfig->path);
+        $this->assertEquals('', $cookieConfig->domain);
+        $this->assertEquals(false, $cookieConfig->secure);
 
         // secure as string
         $cookieConfig = new cookieConfig(array('secure' => 'true'));
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals(true, $cookieConfig->secure);
         $cookieConfig = new cookieConfig(array('secure' => 'false'));
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals(true, $cookieConfig->secure);
     }
 
     /**
@@ -424,12 +424,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $token2 = csrfprotector::generateAuthToken();
 
         $this->assertFalse($token1 == $token2);
-        $this->assertEquals(strlen($token1), 20);
+        $this->assertEquals(20, strlen($token1));
         $this->assertRegExp('/^[a-z0-9]{20}$/', $token1);
 
         csrfprotector::$config['tokenLength'] = 128;
         $token = csrfprotector::generateAuthToken();
-        $this->assertEquals(strlen($token), 128);
+        $this->assertEquals(128, strlen($token));
         $this->assertRegExp('/^[a-z0-9]{128}$/', $token);
     }
 
@@ -491,20 +491,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('getCurrentUrl');
         $method->setAccessible(true);
-        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+        $this->assertEquals("http://test/index.php", $method->invoke(null, array()));
 
         $tmp_request_scheme = $_SERVER['REQUEST_SCHEME'];
         unset($_SERVER['REQUEST_SCHEME']);
 
         // server-https is not set
-        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+        $this->assertEquals("http://test/index.php", $method->invoke(null, array()));
 
         $_SERVER['HTTPS'] = 'on';
-        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+        $this->assertEquals("https://test/index.php", $method->invoke(null, array()));
         unset($_SERVER['HTTPS']);
 
         $_SERVER['REQUEST_SCHEME'] = "https";
-        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+        $this->assertEquals("https://test/index.php", $method->invoke(null, array()));
 
         $_SERVER['REQUEST_SCHEME'] = $tmp_request_scheme;
     }
