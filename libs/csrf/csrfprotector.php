@@ -48,6 +48,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 */
 		public $secure = false;
 
+        /**
+         * Variable: $expire
+         * expiry parameter in seconds from now for setcookie method, default is 30 minutes
+         * @var int
+         */
+        public $expire = 1800;
+
 		/**
 		 * Function: constructor
 		 * 
@@ -59,19 +66,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				if (isset($cfg['path'])) $this->path = $cfg['path'];
 				if (isset($cfg['domain'])) $this->domain = $cfg['domain'];
 				if (isset($cfg['secure'])) $this->secure = (bool) $cfg['secure'];
+                if (isset($cfg['expire']) && $cfg['expire']) $this->expire = (int)$cfg['expire'];
 			}
 		}
 	}
 
 	class csrfProtector
 	{
-		/*
-		 * Variable: $cookieExpiryTime
-		 * expiry time for cookie
-		 * @var int
-		 */
-		public static $cookieExpiryTime = 1800;	//30 minutes
-
 		/*
 		 * Variable: $isSameOrigin
 		 * flag for cross origin/same origin request
@@ -432,8 +433,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			setcookie(
 				self::$config['CSRFP_TOKEN'], 
-				$token, 
-				time() + self::$cookieExpiryTime,
+				$token,
+                time() + self::$cookieConfig->expire,
 				self::$cookieConfig->path,
 				self::$cookieConfig->domain,
 				(bool) self::$cookieConfig->secure);

@@ -143,13 +143,14 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Function to check cookieconfig class
+     * Function to check cookieConfig class
      */
     public function testCookieConfigClass() {
         $cfg = array(
             "path" => "abcd",
             "secure" => true,
             "domain" => "abcd",
+            "expire" => 600,
         );
 
         // simple test
@@ -157,18 +158,26 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertEquals($cookieConfig->path, "abcd");
         $this->assertEquals($cookieConfig->domain, "abcd");
         $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals(600, $cookieConfig->expire);
 
         // default value test
         $cookieConfig = new cookieConfig(array());
         $this->assertEquals($cookieConfig->path, '');
         $this->assertEquals($cookieConfig->domain, '');
         $this->assertEquals($cookieConfig->secure, false);
+        $this->assertEquals(1800, $cookieConfig->expire);
 
         // secure as string
         $cookieConfig = new cookieConfig(array('secure' => 'true'));
         $this->assertEquals($cookieConfig->secure, true);
         $cookieConfig = new cookieConfig(array('secure' => 'false'));
         $this->assertEquals($cookieConfig->secure, true);
+
+        // expire as string
+        $cookieConfig = new cookieConfig(array('expire' => '600'));
+        $this->assertEquals(600, $cookieConfig->expire);
+        $cookieConfig = new cookieConfig(array('expire' => ''));
+        $this->assertEquals(1800, $cookieConfig->expire);
     }
 
     /**
@@ -178,6 +187,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
+        csrfProtector::$config['tokenLength'] = 20;
 
         // this one would generally fails, as init was already called and now private static
         // property is set with secure as false;
@@ -195,6 +205,30 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $property->setValue($csrfp, new cookieConfig(array('secure' => true)));
         csrfprotector::refreshToken();
         $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
+    }
+
+    /**
+     * test secure flag is set in the token cookie when requested
+     */
+    public function testCookieExpireTime()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('123abcd');
+        csrfProtector::$config['tokenLength'] = 20;
+
+        // this one would generally fails, as init was already called and now private static
+        // property is already set;
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('cookieConfig');
+        $property->setAccessible(true);
+
+        // change value to 600
+        $property->setValue($csrfp, new cookieConfig(array('expire' => 600)));
+        csrfprotector::refreshToken();
+        // Check the expire date to the nearest minute in case the seconds does not match during test execution
+        $this->assertRegExp('/; expires=' . date('D, d-M-Y H:i', time() + 600) . ':\d\d GMT;/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
+        $this->assertRegExp('/; Max-Age=600/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
     }
 
     /**
