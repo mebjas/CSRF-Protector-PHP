@@ -544,6 +544,23 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * testing logging function
+     */
+    public function testlogCSRFattack_withAbsoluteLogDirectory()
+    {
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        if (!is_dir($this->logDir)) mkdir($this->logDir);
+
+        csrfprotector::$config['logDirectory'] = realpath($this->logDir);
+
+        $method->invoke(null);
+        $this->assertFileExists($this->logDir . "/" . date("m-20y") . ".log");
+    }
+
+    /**
      * Tests isUrlAllowed() function for various urls and configuration
      */
     public function testisURLallowed()

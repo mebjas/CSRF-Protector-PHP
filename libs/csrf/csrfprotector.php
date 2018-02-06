@@ -549,12 +549,18 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 */
 		protected static function logCSRFattack()
 		{
-		        if (!file_exists(__DIR__ . "/../" . self::$config['logDirectory']))
-		            throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
+			$logDirectory = __DIR__ . "/../" . self::$config['logDirectory'];
 
-		        //if file does not exist for, create it
-		        $logFilename = __DIR__ . "/../" . self::$config['logDirectory'] . "/" . date("m-20y") . ".log";
-		        $logFile = fopen($logFilename, "a+");
+			// If the relative log directory path does not exist try as an absolute path
+			if (!is_dir($logDirectory)) {
+				$logDirectory = self::$config['logDirectory'];
+			}
+
+			if (!is_dir($logDirectory))
+			throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
+
+			// Append to the log file, or create it if it does not exist create
+			$logFile = fopen("$logDirectory/" . date("m-20y") . ".log", "a+");
 			
 			//throw exception if above fopen fails
 			if (!$logFile)
