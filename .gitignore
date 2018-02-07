@@ -1,10 +1,10 @@
 phpunit.phar
 coveralls.phar
 
-coverage/*
-vendor/*
+coverage/
+vendor/
 build/
 log/*.log
 
+# PHPStorm project directory
 .idea/*
-libs/config.php
