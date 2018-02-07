@@ -15,7 +15,7 @@ return array(
 		"POST" => 0),
 	"errorRedirectionPage" => "",
 	"customErrorMessage" => "",
-	"jsUrl" => "http://localhost/csrfp/js/csrfprotector.js",
+	"jsUrl" => false,
 	"tokenLength" => 10,
 	"cookieConfig" => array(
 		"path" => '',

@@ -9,14 +9,14 @@
  */
 return array(
 	"CSRFP_TOKEN" => "csrfp_token",
-	"logDirectory" => "../log",
-	"failedAuthAction" => array(
-		"GET" => 0,
-		"POST" => 0),
+//	"logDirectory" => "../log",
+//	"failedAuthAction" => array(
+//		"GET" => 0,
+//		"POST" => 0),
 	"errorRedirectionPage" => "",
 	"customErrorMessage" => "",
-	"jsUrl" => "http://localhost/csrfp/js/csrfprotector.js",
-	"tokenLength" => 10,
+//	"jsUrl" => "http://localhost/csrfp/js/csrfprotector.js",
+//	"tokenLength" => 10,
 	"cookieConfig" => array(
 		"path" => '',
 		"domain" => '',
