@@ -59,7 +59,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Function: constructor
 		 * 
 		 * Parameters:
-		 * $cfg - config array loaded from config file;
+		 * @param $cfg - config array loaded from config file;
 		 */
 		function __construct($cfg) {
 			if ($cfg !== null) {
@@ -103,7 +103,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Variable: $requestType
-		 * Varaible to store weather request type is post or get
+		 * Variable to store whether request type is post or get
 		 * @var string
 		 */
 		protected static $requestType = "GET";
@@ -203,7 +203,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				self::$config['cookieConfig'] = array();
 			self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 
-			// Validate the config if everythings filled out
+			// Validate the config if everything is filled out
 			// TODO: collect all missing values and throw exception together
 			foreach (self::$requiredConfigurations as $value) {
 				if (!isset(self::$config[$value]) || self::$config[$value] == '') {
@@ -213,7 +213,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 							$value
 						)
 					);
-					exit;
 				}
 			}
 
@@ -268,7 +267,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			} else if (!static::isURLallowed()) {
 				//currently for same origin only
@@ -280,13 +279,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();			
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			}	
 		}
 
 		/*
-		 * Fucntion: getTokenFromRequest
+		 * Function: getTokenFromRequest
 		 * function to get token in case of POST request
 		 *
 		 * Parameters: 
@@ -302,8 +301,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			}
 
 			if (function_exists('apache_request_headers')) {
-				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
-					return apache_request_headers()[self::$config['CSRFP_TOKEN']];
+                $apacheRequestHeaders = apache_request_headers();
+                if (isset($apacheRequestHeaders[self::$config['CSRFP_TOKEN']])) {
+					return $apacheRequestHeaders[self::$config['CSRFP_TOKEN']];
 				}
 			}
 
@@ -380,6 +380,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//redirect to custom error page
 					$location  = self::$config['errorRedirectionPage'];
 					header("location: $location");
+                    exit(self::$config['customErrorMessage']);
+                    break;
 				case 3:
 					//send custom error message
 					exit(self::$config['customErrorMessage']);
@@ -547,7 +549,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Parameters: 
 		 * void
 		 *
-		 * Retruns: 
+		 * Returns:
 		 * void
 		 *
 		 * Throws: 
@@ -625,7 +627,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Function: isURLallowed
-		 * Function to check if a url mataches for any urls
+		 * Function to check if a url matches for any urls
 		 * Listed in config file
 		 *
 		 * Parameters: 

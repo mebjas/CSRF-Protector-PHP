@@ -20,16 +20,16 @@ var CSRFP = {
 	 * Array of patterns of url, for which csrftoken need to be added
 	 * In case of GET request also, provided from server
 	 *
-	 * @var string array
+	 * @var {array}
 	 */
 	checkForUrls: [],
 	/**
 	 * Function to check if a certain url is allowed to perform the request
 	 * With or without csrf token
 	 *
-	 * @param: string, url
+	 * @param {string} url
 	 *
-	 * @return: boolean, 	true if csrftoken is not needed
+	 * @return {Boolean} 	true if csrftoken is not needed
 	 * 						false if csrftoken is needed
 	 */
 	_isValidGetRequest: function(url) {
@@ -41,12 +41,12 @@ var CSRFP = {
 		}
 		return true;
 	},
-	/** 
-	 * function to get Auth key from cookie Andreturn it to requesting function
+	/**
+	 * Function to get Auth key from cookie and return it to requesting function
 	 *
-	 * @param: void
-	 *
-	 * @return: string, csrftoken retrieved from cookie
+     * @param: void
+     *
+	 * @return {string|Boolean} csrftoken retrieved from cookie
 	 */
 	_getAuthKey: function() {
 		var re = new RegExp(CSRFP.CSRFP_TOKEN +"=([^;]+)(;|$)");
@@ -60,9 +60,9 @@ var CSRFP = {
 	/** 
 	 * Function to get domain of any url
 	 *
-	 * @param: string, url
+	 * @param {string} url
 	 *
-	 * @return: string, domain of url
+	 * @return {string} domain of url
 	 */
 	_getDomain: function(url) {
 		if (url.indexOf("http://") !== 0 
@@ -72,9 +72,9 @@ var CSRFP = {
 	},
 	/**
 	 * Function to create and return a hidden input element
-	 * For stroing the CSRFP_TOKEN
+	 * For storing the CSRFP_TOKEN
 	 *
-	 * @param void
+	 * @param: void
 	 *
 	 * @return input element
 	 */
@@ -88,9 +88,9 @@ var CSRFP = {
 	},
 	/**
 	 * Returns absolute path for relative path
-	 * 
-	 * @param base, base url
-	 * @param relative, relative url
+	 *
+	 * @param {string} base base url
+	 * @param {string} relative relative url
 	 *
 	 * @return absolute path (string)
 	 */
@@ -111,13 +111,13 @@ var CSRFP = {
 		}
 		return stack.join("/");
 	},
-	/** 
-	 * Remove jcsrfp-token run fun and then put them back 
+	/**
+	 * Remove jcsrfp-token run fun and then put them back
 	 *
-	 * @param function
-	 * @param reference form obj
+	 * @param {function} fun
+	 * @param {object} obj reference form obj
 	 *
-	 * @retrun function
+	 * @return function
 	 */
 	_csrfpWrap: function(fun, obj) {
 		return function(event) {
@@ -139,7 +139,7 @@ var CSRFP = {
 	/**
 	 * Initialises the CSRFProtector js script
 	 *
-	 * @param void
+	 * @param: void
 	 *
 	 * @return void
 	 */
@@ -195,7 +195,7 @@ function csrfprotector_init() {
 		};
 	});
 
-	// intial binding
+	// initial binding
 	// for(var i = 0; i < document.forms.length; i++) {
 	// 	document.forms[i].addEventListener("submit", BasicSubmitInterceptor);
 	// }
@@ -232,7 +232,7 @@ function csrfprotector_init() {
 	/**
 	 * Add wrapper for IE's attachEvent
 	 * todo - check for method
-	 * todo - typeof is now obselete for IE 11, use some other method.
+	 * todo - typeof is now obsolete for IE 11, use some other method.
 	 */
 	if (typeof HTMLFormElement.prototype.attachEvent !== 'undefined') {
 		HTMLFormElement.prototype.attachEvent_ = HTMLFormElement.prototype.attachEvent;
@@ -254,7 +254,7 @@ function csrfprotector_init() {
 
 	/** 
 	 * Wrapper to XHR open method
-	 * Add a property method to XMLHttpRequst class
+	 * Add a property method to XMLHttpRequest class
 	 * @param: all parameters to XHR open method
 	 * @return: object returned by default, XHR open method
 	 */
@@ -281,7 +281,7 @@ function csrfprotector_init() {
 
 	/** 
 	 * Wrapper to XHR send method
-	 * Add query paramter to XHR object
+	 * Add query parameter to XHR object
 	 *
 	 * @param: all parameters to XHR send method
 	 *

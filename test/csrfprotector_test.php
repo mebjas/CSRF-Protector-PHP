@@ -12,7 +12,8 @@ if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCas
 class csrfp_wrapper extends csrfprotector
 {
     /**
-     * Function to provide wrapper methode to set the protected var, requestType
+     * Function to provide wrapper method to set the protected var, requestType
+     * @param string $type
      */
     public static function changeRequestType($type)
     {
@@ -22,6 +23,8 @@ class csrfp_wrapper extends csrfprotector
     /**
      * Function to check for a string value anywhere within HTTP response headers
      * Returns true on first match of $needle in header names or values
+     * @param string $needle
+     * @return bool
      */
     public static function checkHeader($needle)
     {
@@ -36,6 +39,8 @@ class csrfp_wrapper extends csrfprotector
     /**
      * Function to return the string value of the last response header
      * identified by name $needle
+     * @param string $needle
+     * @return string
      */
     public static function getHeaderValue($needle)
     {
@@ -56,12 +61,12 @@ class csrfp_wrapper extends csrfprotector
  */
 class Helper {
     /**
-     * Function to recusively delete a dir
+     * Function to recursively delete a dir
      */
     public static function delTree($dir) { 
         $files = array_diff(scandir($dir), array('.','..')); 
         foreach ($files as $file) { 
-            (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
+            (is_dir("$dir/$file")) ? self::delTree("$dir/$file") : unlink("$dir/$file");
         } 
         return rmdir($dir); 
     }
@@ -74,12 +79,12 @@ class Helper {
 class csrfp_test extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var to hold current configurations
+     * @var array to hold current configurations
      */
     protected $config = array();
 
     /**
-     * @var log directory for testing
+     * @var string log directory for testing
      */
     private $logDir;
 
@@ -155,23 +160,23 @@ class csrfp_test extends PHPUnit_Framework_TestCase
 
         // simple test
         $cookieConfig = new cookieConfig($cfg);
-        $this->assertEquals($cookieConfig->path, "abcd");
-        $this->assertEquals($cookieConfig->domain, "abcd");
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals("abcd", $cookieConfig->path);
+        $this->assertEquals("abcd", $cookieConfig->domain);
+        $this->assertEquals(true, $cookieConfig->secure);
         $this->assertEquals(600, $cookieConfig->expire);
 
         // default value test
         $cookieConfig = new cookieConfig(array());
-        $this->assertEquals($cookieConfig->path, '');
-        $this->assertEquals($cookieConfig->domain, '');
-        $this->assertEquals($cookieConfig->secure, false);
+        $this->assertEquals('', $cookieConfig->path);
+        $this->assertEquals('', $cookieConfig->domain);
+        $this->assertEquals(false, $cookieConfig->secure);
         $this->assertEquals(1800, $cookieConfig->expire);
 
         // secure as string
         $cookieConfig = new cookieConfig(array('secure' => 'true'));
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals(true, $cookieConfig->secure);
         $cookieConfig = new cookieConfig(array('secure' => 'false'));
-        $this->assertEquals($cookieConfig->secure, true);
+        $this->assertEquals(true, $cookieConfig->secure);
 
         // expire as string
         $cookieConfig = new cookieConfig(array('expire' => '600'));
@@ -436,12 +441,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $token2 = csrfprotector::generateAuthToken();
 
         $this->assertFalse($token1 == $token2);
-        $this->assertEquals(strlen($token1), 20);
+        $this->assertEquals(20, strlen($token1));
         $this->assertRegExp('/^[a-z0-9]{20}$/', $token1);
 
         csrfprotector::$config['tokenLength'] = 128;
         $token = csrfprotector::generateAuthToken();
-        $this->assertEquals(strlen($token), 128);
+        $this->assertEquals(128, strlen($token));
         $this->assertRegExp('/^[a-z0-9]{128}$/', $token);
     }
 
@@ -553,20 +558,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('getCurrentUrl');
         $method->setAccessible(true);
-        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+        $this->assertEquals("http://test/index.php", $method->invoke(null, array()));
 
         $tmp_request_scheme = $_SERVER['REQUEST_SCHEME'];
         unset($_SERVER['REQUEST_SCHEME']);
 
         // server-https is not set
-        $this->assertEquals($method->invoke(null, array()), "http://test/index.php");
+        $this->assertEquals("http://test/index.php", $method->invoke(null, array()));
 
         $_SERVER['HTTPS'] = 'on';
-        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+        $this->assertEquals("https://test/index.php", $method->invoke(null, array()));
         unset($_SERVER['HTTPS']);
 
         $_SERVER['REQUEST_SCHEME'] = "https";
-        $this->assertEquals($method->invoke(null, array()), "https://test/index.php");
+        $this->assertEquals("https://test/index.php", $method->invoke(null, array()));
 
         $_SERVER['REQUEST_SCHEME'] = $tmp_request_scheme;
     }
@@ -654,21 +659,26 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $_SERVER['PHP_SELF'] = '/nodelete.php';
         $this->assertTrue(csrfprotector::isURLallowed());
 
+        // Test 'http://test/index.php'
         $_SERVER['PHP_SELF'] = '/index.php';
-        $this->assertTrue(csrfprotector::isURLallowed('http://test/index.php'));
+        $this->assertTrue(csrfprotector::isURLallowed());
 
+        // Test 'http://test/delete.php'
         $_SERVER['PHP_SELF'] = '/delete.php';
-        $this->assertFalse(csrfprotector::isURLallowed('http://test/delete.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // Test 'http://test/delete_users.php'
         $_SERVER['PHP_SELF'] = '/delete_user.php';
-        $this->assertFalse(csrfprotector::isURLallowed('http://test/delete_users.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // Test 'https://test/index.php'
         $_SERVER['REQUEST_SCHEME'] = 'https';
         $_SERVER['PHP_SELF'] = '/index.php';
-        $this->assertFalse(csrfprotector::isURLallowed('https://test/index.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
 
+        // 'https://test/delete_users.php'
         $_SERVER['PHP_SELF'] = '/delete_user.php';
-        $this->assertFalse(csrfprotector::isURLallowed('https://test/delete_users.php'));
+        $this->assertFalse(csrfprotector::isURLallowed());
     }
 
     /**
@@ -677,7 +687,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testModCSRFPEnabledException()
     {
         putenv('mod_csrfp_enabled=true');
-        $temp = $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
+        $_COOKIE[csrfprotector::$config['CSRFP_TOKEN']] = 'abc';
         $_SESSION[csrfprotector::$config['CSRFP_TOKEN']] = array('abc');
 
         csrfProtector::$config = array();
