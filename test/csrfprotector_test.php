@@ -232,23 +232,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * test authorise post -> log directory exception
-     */
-    public function testAuthorisePost_logdirException()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        csrfprotector::$config['logDirectory'] = 'unknown_location';
-
-        try {
-            csrfprotector::authorizePost();
-        } catch (logDirectoryNotFoundException $ex) {
-            $this->assertTrue(true);
-            return;;
-        }
-        $this->fail('logDirectoryNotFoundException has not been raised.');
-    }
-
-    /**
      * test authorise post -> action = 403, forbidden
      */
     public function testAuthorisePost_failedAction_1()
@@ -589,26 +572,76 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * testing exception in logging function
+     * test log CSRF attack -> log directory exception
+     * @expectedException logDirectoryNotFoundException
      */
-    public function testLoggingException()
+    public function testlogCSRFattack_logDirException()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        csrfprotector::$config['logDirectory'] = 'unknown_location';
+
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        $method->invoke(null);
+    }
+
+    /**
+     * test log CSRF attack -> log file write error
+     * @expectedException logFileWriteError
+     */
+    public function testlogCSRFattack_logFileError()
     {
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('logCSRFattack');
         $method->setAccessible(true);
 
-        try {
-            $method->invoke(null, array());
-            $this->fail("logFileWriteError was not caught");
-        } catch (Exception $ex) {
-            // pass
-            $this->assertTrue(true);
-        }
+        // Setting error reporting to E_ERROR and creating a directory with the same name as the log file will force
+        // fopen to return FALSE
+        $errorReportingLevel = error_reporting(E_ERROR);
 
-        if (!is_dir($this->logDir))
-            mkdir($this->logDir);
-        $method->invoke(null, array());
-        $this->assertTrue(file_exists($this->logDir ."/" .date("m-20y") .".log"));
+        $logFilename = $this->logDir . "/" . date("m-20y") . ".log";
+        if (!is_dir($logFilename)) mkdir($logFilename, 0777, true);
+
+        try {
+            $method->invoke(null);
+        } catch (Exception $e) {
+            // Reset the error reporting level
+            error_reporting($errorReportingLevel);
+            throw $e;
+        }
+    }
+
+    /**
+     * testing logging function
+     */
+    public function testlogCSRFattack()
+    {
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        if (!is_dir($this->logDir)) mkdir($this->logDir);
+        $method->invoke(null);
+        $this->assertFileExists($this->logDir . "/" . date("m-20y") . ".log");
+    }
+
+    /**
+     * testing logging function
+     */
+    public function testlogCSRFattack_withAbsoluteLogDirectory()
+    {
+        $stub = new ReflectionClass('csrfprotector');
+        $method = $stub->getMethod('logCSRFattack');
+        $method->setAccessible(true);
+
+        if (!is_dir($this->logDir)) mkdir($this->logDir);
+
+        csrfprotector::$config['logDirectory'] = realpath($this->logDir);
+
+        $method->invoke(null);
+        $this->assertFileExists($this->logDir . "/" . date("m-20y") . ".log");
     }
 
     /**
