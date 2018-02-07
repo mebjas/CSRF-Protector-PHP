@@ -722,4 +722,36 @@ class csrfp_test extends PHPUnit_Framework_TestCase
             $this->fail("exception other than alreadyInitializedException failed");
         }
     }
+
+    /**
+     * Test for exception thrown when init() method is called with missing config items
+     * @expectedException incompleteConfigurationException
+     * @expectedExceptionMessage OWASP CSRFProtector: Incomplete configuration file: missing logDirectory, failedAuthAction, jsUrl, tokenLength value(s)
+     */
+    public function testInit_incompleteConfigurationException()
+    {
+        // Create an instance of config file -- for testing
+        $data = file_get_contents(__DIR__ .'/config.testInit_incompleteConfigurationException.php');
+        file_put_contents(__DIR__ .'/../libs/config.php', $data);
+
+        csrfProtector::$config = array();
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfProtector::init();
+    }
+
+    /**
+     * Test for exception thrown when init() method is called multiple times
+     */
+    public function testInit_withoutInjectedCSRFGuardScript()
+    {
+        // Create an instance of config file -- for testing
+        $data = file_get_contents(__DIR__ .'/config.testInit_withoutInjectedCSRFGuardScript.php');
+        file_put_contents(__DIR__ .'/../libs/config.php', $data);
+
+        csrfProtector::$config = array();
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        csrfProtector::init();
+    }
 }

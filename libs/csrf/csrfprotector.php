@@ -204,19 +204,20 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 
 			// Validate the config if everything is filled out
-			// TODO: collect all missing values and throw exception together
+            $missingConfiguration = [];
 			foreach (self::$requiredConfigurations as $value) {
-				if (!isset(self::$config[$value]) || self::$config[$value] == '') {
-					throw new incompleteConfigurationException(
-						sprintf(
-							"OWASP CSRFProtector: Incomplete configuration file, Value: %s missing ",
-							$value
-						)
-					);
-				}
-			}
+                if (!isset(self::$config[$value]) || self::$config[$value] === '') {
+                    $missingConfiguration[] = $value;
+                }
+            }
 
-			// Authorise the incoming request
+            if ($missingConfiguration) {
+                throw new incompleteConfigurationException(
+                    'OWASP CSRFProtector: Incomplete configuration file: missing ' .
+                    implode(', ', $missingConfiguration) . ' value(s)');
+            }
+
+            // Authorise the incoming request
 			self::authorizePost();
 
 			// Initialize output buffering handler
