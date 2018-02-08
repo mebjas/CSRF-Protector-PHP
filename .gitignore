@@ -1,2 +1,10 @@
 phpunit.phar
-coverage/*
+coveralls.phar
+
+coverage/
+vendor/
+build/
+log/*.log
+
+# PHPStorm project directory
+.idea/*

@@ -49,29 +49,30 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		public $secure = false;
 
 		/**
+		 * Variable: $expire
+		 * expiry parameter in seconds from now for setcookie method, default is 30 minutes
+		 * @var int
+		 */
+		public $expire = 1800;
+
+		/**
 		 * Function: constructor
 		 * 
 		 * Parameters:
-		 * $cfg - config array loaded from config file;
+		 * @param $cfg - config array loaded from config file;
 		 */
 		function __construct($cfg) {
 			if ($cfg !== null) {
 				if (isset($cfg['path'])) $this->path = $cfg['path'];
 				if (isset($cfg['domain'])) $this->domain = $cfg['domain'];
 				if (isset($cfg['secure'])) $this->secure = (bool) $cfg['secure'];
+				if (isset($cfg['expire']) && $cfg['expire']) $this->expire = (int)$cfg['expire'];
 			}
 		}
 	}
 
 	class csrfProtector
 	{
-		/*
-		 * Variable: $cookieExpiryTime
-		 * expiry time for cookie
-		 * @var int
-		 */
-		public static $cookieExpiryTime = 1800;	//30 minutes
-
 		/*
 		 * Variable: $isSameOrigin
 		 * flag for cross origin/same origin request
@@ -102,7 +103,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Variable: $requestType
-		 * Varaible to store weather request type is post or get
+		 * Variable to store whether request type is post or get
 		 * @var string
 		 */
 		protected static $requestType = "GET";
@@ -164,7 +165,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			//start session in case its not
 			if (session_id() == '')
-			    session_start();
+				session_start();
 
 			/*
 			 * load configuration file and properties
@@ -202,18 +203,18 @@ if (!defined('__CSRF_PROTECTOR__')) {
 				self::$config['cookieConfig'] = array();
 			self::$cookieConfig = new cookieConfig(self::$config['cookieConfig']);
 
-			// Validate the config if everythings filled out
-			// TODO: collect all missing values and throw exception together
+			// Validate the config if everything is filled out
+			$missingConfiguration = [];
 			foreach (self::$requiredConfigurations as $value) {
-				if (!isset(self::$config[$value]) || self::$config[$value] == '') {
-					throw new incompleteConfigurationException(
-						sprintf(
-							"OWASP CSRFProtector: Incomplete configuration file, Value: %s missing ",
-							$value
-						)
-					);
-					exit;
+				if (!isset(self::$config[$value]) || self::$config[$value] === '') {
+					$missingConfiguration[] = $value;
 				}
+			}
+
+			if ($missingConfiguration) {
+				throw new incompleteConfigurationException(
+					'OWASP CSRFProtector: Incomplete configuration file: missing ' .
+					implode(', ', $missingConfiguration) . ' value(s)');
 			}
 
 			// Authorise the incoming request
@@ -267,7 +268,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			} else if (!static::isURLallowed()) {
 				//currently for same origin only
@@ -279,13 +280,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//action in case of failed validation
 					self::failedValidationAction();			
 				} else {
-					self::refreshToken();	//refresh token for successfull validation
+					self::refreshToken();	//refresh token for successful validation
 				}
 			}	
 		}
 
 		/*
-		 * Fucntion: getTokenFromRequest
+		 * Function: getTokenFromRequest
 		 * function to get token in case of POST request
 		 *
 		 * Parameters: 
@@ -301,8 +302,9 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			}
 
 			if (function_exists('apache_request_headers')) {
-				if (isset(apache_request_headers()[self::$config['CSRFP_TOKEN']])) {
-					return apache_request_headers()[self::$config['CSRFP_TOKEN']];
+				$apacheRequestHeaders = apache_request_headers();
+				if (isset($apacheRequestHeaders[self::$config['CSRFP_TOKEN']])) {
+					return $apacheRequestHeaders[self::$config['CSRFP_TOKEN']];
 				}
 			}
 
@@ -356,9 +358,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 */
 		private static function failedValidationAction()
 		{
-			if (!file_exists(__DIR__ ."/../" .self::$config['logDirectory']))
-				throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
-		
 			//call the logging function
 			static::logCSRFattack();
 
@@ -382,6 +381,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 					//redirect to custom error page
 					$location  = self::$config['errorRedirectionPage'];
 					header("location: $location");
+					exit(self::$config['customErrorMessage']);
+					break;
 				case 3:
 					//send custom error message
 					exit(self::$config['customErrorMessage']);
@@ -432,8 +433,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 			setcookie(
 				self::$config['CSRFP_TOKEN'], 
-				$token, 
-				time() + self::$cookieExpiryTime,
+				$token,
+				time() + self::$cookieConfig->expire,
 				self::$cookieConfig->path,
 				self::$cookieConfig->domain,
 				(bool) self::$cookieConfig->secure);
@@ -496,45 +497,50 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		public static function ob_handler($buffer, $flags)
 		{
 			// Even though the user told us to rewrite, we should do a quick heuristic
-		    // to check if the page is *actually* HTML. We don't begin rewriting until
-		    // we hit the first <html tag.
-		    if (!self::$isValidHTML) {
-		        // not HTML until proven otherwise
-		        if (stripos($buffer, '<html') !== false) {
-		            self::$isValidHTML = true; 
-		        } else {
-		            return $buffer;
-		        }
-		    }
-		    
-		    // TODO: statically rewrite all forms as well so that if a form is submitted
-		    // before the js has worked on, it will still have token to send
-		    // @priority: medium @labels: important @assign: mebjas
-		    // @deadline: 1 week
+			// to check if the page is *actually* HTML. We don't begin rewriting until
+			// we hit the first <html tag.
+			if (!self::$isValidHTML) {
+				// not HTML until proven otherwise
+				if (stripos($buffer, '<html') !== false) {
+					self::$isValidHTML = true;
+				} else {
+					return $buffer;
+				}
+			}
 
-		    //add a <noscript> message to outgoing HTML output,
-		    //informing the user to enable js for CSRFProtector to work
-		    //best section to add, after <body> tag
-		    $buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" .self::$config['disabledJavascriptMessage'] .
-		    	"</noscript>", $buffer);
+			// TODO: statically rewrite all forms as well so that if a form is submitted
+			// before the js has worked on, it will still have token to send
+			// @priority: medium @labels: important @assign: mebjas
+			// @deadline: 1 week
 
-		    $hiddenInput = '<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME.'" value="' 
-		    				.self::$config['CSRFP_TOKEN'] .'">' .PHP_EOL;
+			if (self::$config['jsUrl']) {
+				//add a <noscript> message to outgoing HTML output,
+				//informing the user to enable js for CSRFProtector to work
+				//best section to add, after <body> tag
+				$buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" . self::$config['disabledJavascriptMessage'] .
+					"</noscript>", $buffer);
+			}
 
-		    $hiddenInput .= '<input type="hidden" id="' .CSRFP_FIELD_URLS .'" value=\''
-		    				.json_encode(self::$config['verifyGetFor']) .'\'>';
+			$hiddenInput = '<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME.'" value="'
+							.self::$config['CSRFP_TOKEN'] .'">' .PHP_EOL;
 
-		    //implant hidden fields with check url information for reading in javascript
-	        $buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
+			$hiddenInput .= '<input type="hidden" id="' .CSRFP_FIELD_URLS .'" value=\''
+							.json_encode(self::$config['verifyGetFor']) .'\'>';
 
-		    //implant the CSRFGuard js file to outgoing script
-		    $script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>' . PHP_EOL;
-		    $buffer = str_ireplace('</body>', $script . '</body>', $buffer, $count);
+			//implant hidden fields with check url information for reading in javascript
+			$buffer = str_ireplace('</body>', $hiddenInput . '</body>', $buffer);
 
-		    if (!$count)
-		        $buffer .= $script;
+			if (self::$config['jsUrl']) {
+				//implant the CSRFGuard js file to outgoing script
+				$script = '<script type="text/javascript" src="' . self::$config['jsUrl'] . '"></script>';
+				$buffer = str_ireplace('</body>', $script . PHP_EOL . '</body>', $buffer, $count);
 
-		    return $buffer;
+				// Add the script to the end if the body tag was not closed
+				if (!$count)
+					$buffer .= $script;
+			}
+
+			return $buffer;
 		}
 
 		/*
@@ -544,7 +550,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 * Parameters: 
 		 * void
 		 *
-		 * Retruns: 
+		 * Returns:
 		 * void
 		 *
 		 * Throws: 
@@ -552,9 +558,18 @@ if (!defined('__CSRF_PROTECTOR__')) {
 		 */
 		protected static function logCSRFattack()
 		{
-			//if file doesnot exist for, create it
-			$logFile = fopen(__DIR__ ."/../" .self::$config['logDirectory']
-			."/" .date("m-20y") .".log", "a+");
+			$logDirectory = __DIR__ . "/../" . self::$config['logDirectory'];
+
+			// If the relative log directory path does not exist try as an absolute path
+			if (!is_dir($logDirectory)) {
+				$logDirectory = self::$config['logDirectory'];
+			}
+
+			if (!is_dir($logDirectory))
+			throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
+
+			// Append to the log file, or create it if it does not exist create
+			$logFile = fopen("$logDirectory/" . date("m-20y") . ".log", "a+");
 			
 			//throw exception if above fopen fails
 			if (!$logFile)
@@ -613,7 +628,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
 
 		/*
 		 * Function: isURLallowed
-		 * Function to check if a url mataches for any urls
+		 * Function to check if a url matches for any urls
 		 * Listed in config file
 		 *
 		 * Parameters: 
