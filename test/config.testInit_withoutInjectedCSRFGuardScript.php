@@ -8,14 +8,14 @@
  * ---- tokenLength
  */
 return array(
-	"CSRFP_TOKEN" => "",
+	"CSRFP_TOKEN" => "csrfp_token",
 	"logDirectory" => "../log",
 	"failedAuthAction" => array(
 		"GET" => 0,
 		"POST" => 0),
 	"errorRedirectionPage" => "",
 	"customErrorMessage" => "",
-	"jsUrl" => "",
+	"jsUrl" => false,
 	"tokenLength" => 10,
 	"cookieConfig" => array(
 		"path" => '',
