@@ -548,7 +548,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME . '"', $modifiedHTML);
         $this->assertContains('<input type="hidden" id="' . CSRFP_FIELD_URLS . '"', $modifiedHTML);
 
-        $this->assertNotContains('<noscript', $modifiedHTML);
+        $this->assertContains('<noscript', $modifiedHTML);
         $this->assertNotContains('</script>' . PHP_EOL . '</body>', $modifiedHTML);
     }
 

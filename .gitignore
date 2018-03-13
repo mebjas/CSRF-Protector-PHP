@@ -5,6 +5,3 @@ coverage/
 vendor/
 build/
 log/*.log
-
-# PHPStorm project directory
-.idea/*

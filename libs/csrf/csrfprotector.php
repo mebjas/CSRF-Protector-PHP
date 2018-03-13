@@ -513,13 +513,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
 			// @priority: medium @labels: important @assign: mebjas
 			// @deadline: 1 week
 
-			if (self::$config['jsUrl']) {
-				//add a <noscript> message to outgoing HTML output,
-				//informing the user to enable js for CSRFProtector to work
-				//best section to add, after <body> tag
-				$buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" . self::$config['disabledJavascriptMessage'] .
-					"</noscript>", $buffer);
-			}
+			//add a <noscript> message to outgoing HTML output,
+			//informing the user to enable js for CSRFProtector to work
+			//best section to add, after <body> tag
+			$buffer = preg_replace("/<body[^>]*>/", "$0 <noscript>" . self::$config['disabledJavascriptMessage'] .
+				"</noscript>", $buffer);
 
 			$hiddenInput = '<input type="hidden" id="' . CSRFP_FIELD_TOKEN_NAME.'" value="'
 							.self::$config['CSRFP_TOKEN'] .'">' .PHP_EOL;
