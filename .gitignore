@@ -1,2 +1,7 @@
 phpunit.phar
-coverage/*
+coveralls.phar
+
+coverage/
+vendor/
+build/
+log/*.log
