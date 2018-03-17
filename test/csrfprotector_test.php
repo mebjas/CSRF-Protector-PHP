@@ -1,6 +1,7 @@
 <?php
 date_default_timezone_set('UTC');
-require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
+include __DIR__ .'/../libs/csrf/csrfprotector.php';
+include __DIR__ .'/../libs/csrf/csrfpDefaultLogger.php';
 
 if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCase', true)) {
     class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
@@ -117,7 +118,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $data = file_get_contents(__DIR__ .'/config.test.php');
         file_put_contents(__DIR__ .'/../libs/config.php', $data);
 
-        if (!defined('__TESTING_CSRFP__')) define('__TESTING_CSRFP__', true);
+        if (!defined('__CSRFP_UNIT_TEST__')) define('__CSRFP_UNIT_TEST__', true);
     }
 
     /**
@@ -159,29 +160,29 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         );
 
         // simple test
-        $cookieConfig = new cookieConfig($cfg);
+        $cookieConfig = new csrfpCookieConfig($cfg);
         $this->assertEquals("abcd", $cookieConfig->path);
         $this->assertEquals("abcd", $cookieConfig->domain);
         $this->assertEquals(true, $cookieConfig->secure);
         $this->assertEquals(600, $cookieConfig->expire);
 
         // default value test
-        $cookieConfig = new cookieConfig(array());
+        $cookieConfig = new csrfpCookieConfig(array());
         $this->assertEquals('', $cookieConfig->path);
         $this->assertEquals('', $cookieConfig->domain);
         $this->assertEquals(false, $cookieConfig->secure);
         $this->assertEquals(1800, $cookieConfig->expire);
 
         // secure as string
-        $cookieConfig = new cookieConfig(array('secure' => 'true'));
+        $cookieConfig = new csrfpCookieConfig(array('secure' => 'true'));
         $this->assertEquals(true, $cookieConfig->secure);
-        $cookieConfig = new cookieConfig(array('secure' => 'false'));
+        $cookieConfig = new csrfpCookieConfig(array('secure' => 'false'));
         $this->assertEquals(true, $cookieConfig->secure);
 
         // expire as string
-        $cookieConfig = new cookieConfig(array('expire' => '600'));
+        $cookieConfig = new csrfpCookieConfig(array('expire' => '600'));
         $this->assertEquals(600, $cookieConfig->expire);
-        $cookieConfig = new cookieConfig(array('expire' => ''));
+        $cookieConfig = new csrfpCookieConfig(array('expire' => ''));
         $this->assertEquals(1800, $cookieConfig->expire);
     }
 
@@ -202,12 +203,12 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $property->setAccessible(true);
 
         // change value to false
-        $property->setValue($csrfp, new cookieConfig(array('secure' => false)));
+        $property->setValue($csrfp, new csrfpCookieConfig(array('secure' => false)));
         csrfprotector::refreshToken();
         $this->assertNotRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
 
         // change value to true
-        $property->setValue($csrfp, new cookieConfig(array('secure' => true)));
+        $property->setValue($csrfp, new csrfpCookieConfig(array('secure' => true)));
         csrfprotector::refreshToken();
         $this->assertRegExp('/; secure/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
     }
@@ -229,7 +230,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $property->setAccessible(true);
 
         // change value to 600
-        $property->setValue($csrfp, new cookieConfig(array('expire' => 600)));
+        $property->setValue($csrfp, new csrfpCookieConfig(array('expire' => 600)));
         csrfprotector::refreshToken();
         // Check the expire date to the nearest minute in case the seconds does not match during test execution
         $this->assertRegExp('/; expires=' . date('D, d-M-Y H:i', time() + 600) . ':\d\d GMT;?/', csrfp_wrapper::getHeaderValue('Set-Cookie'));
@@ -265,8 +266,13 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testAuthorisePost_failedAction_2()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('logger');
+        $property->setAccessible(true);
+        // change value to false
+        $property->setValue($csrfp, new csrfpDefaultLogger('../log'));
 
-        csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['failedAuthAction']['POST'] = 1;
         csrfprotector::$config['failedAuthAction']['GET'] = 1;
@@ -355,8 +361,13 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     public function testAuthorisePost_failedAction_6()
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('logger');
+        $property->setAccessible(true);
+        // change value to false
+        $property->setValue($csrfp, new csrfpDefaultLogger('../log'));
 
-        csrfprotector::$config['logDirectory'] = '../log';
         csrfprotector::$config['verifyGetFor'] = array('http://test/index*');
         csrfprotector::$config['failedAuthAction']['POST'] = 10;
         csrfprotector::$config['failedAuthAction']['GET'] = 10;
@@ -584,14 +595,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testlogCSRFattack_logDirException()
     {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        csrfprotector::$config['logDirectory'] = 'unknown_location';
-
-        $stub = new ReflectionClass('csrfprotector');
-        $method = $stub->getMethod('logCSRFattack');
-        $method->setAccessible(true);
-
-        $method->invoke(null);
+        new csrfpDefaultLogger('unknown_location');
     }
 
     /**
@@ -600,10 +604,6 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testlogCSRFattack_logFileError()
     {
-        $stub = new ReflectionClass('csrfprotector');
-        $method = $stub->getMethod('logCSRFattack');
-        $method->setAccessible(true);
-
         // Setting error reporting to E_ERROR and creating a directory with the same name as the log file will force
         // fopen to return FALSE
         $errorReportingLevel = error_reporting(E_ERROR);
@@ -612,7 +612,8 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         if (!is_dir($logFilename)) mkdir($logFilename, 0777, true);
 
         try {
-            $method->invoke(null);
+            $logger = new csrfpDefaultLogger($this->logDir);
+            $logger->log("test");
         } catch (Exception $e) {
             // Reset the error reporting level
             error_reporting($errorReportingLevel);
@@ -625,11 +626,21 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testlogCSRFattack()
     {
+        //// TODO: create log directory if not exists
+        if (!is_dir($this->logDir)) mkdir($this->logDir);
+
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('logger');
+        $property->setAccessible(true);
+        // change value to false
+        $property->setValue($csrfp, new csrfpDefaultLogger($this->logDir));
+
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('logCSRFattack');
         $method->setAccessible(true);
 
-        if (!is_dir($this->logDir)) mkdir($this->logDir);
+
         $method->invoke(null);
         $this->assertFileExists($this->logDir . "/" . date("m-20y") . ".log");
     }
@@ -639,11 +650,20 @@ class csrfp_test extends PHPUnit_Framework_TestCase
      */
     public function testlogCSRFattack_withAbsoluteLogDirectory()
     {
+        //// TODO: create log directory if not exists
+        if (!is_dir($this->logDir)) mkdir($this->logDir);
+
+        $csrfp = new csrfProtector;
+        $reflection = new \ReflectionClass(get_class($csrfp));
+        $property = $reflection->getProperty('logger');
+        $property->setAccessible(true);
+        // change value to false
+        $property->setValue($csrfp, new csrfpDefaultLogger($this->logDir));
+
         $stub = new ReflectionClass('csrfprotector');
         $method = $stub->getMethod('logCSRFattack');
         $method->setAccessible(true);
 
-        if (!is_dir($this->logDir)) mkdir($this->logDir);
 
         csrfprotector::$config['logDirectory'] = realpath($this->logDir);
 
