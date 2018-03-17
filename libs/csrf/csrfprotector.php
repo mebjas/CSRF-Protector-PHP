@@ -99,6 +99,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
          *    Parameters:
          *    $length - length of CSRF_AUTH_TOKEN to be generated
          *    $action - int array, for different actions to be taken in case of failed validation
+         *    $logger - custom logger class object
          *
          *    Returns:
          *        void
