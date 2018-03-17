@@ -3,9 +3,7 @@ include __DIR__ ."/csrfpCookieConfig.php";            //// cookie config class
 include __DIR__ ."/csrfpDefaultLogger.php";           //// Logger class
 include __DIR__ ."/csrfpAction.php";                  //// Actions enumerator
 
-
 if (!defined('__CSRF_PROTECTOR__')) {
-					self::refreshToken();	//refresh token for successful validation
     define('__CSRF_PROTECTOR__', true);     // to avoid multiple declaration errors
 
     // name of HTTP POST variable for authentication

@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('UTC');
-include __DIR__ .'/../libs/csrf/csrfprotector.php';
-include __DIR__ .'/../libs/csrf/csrfpDefaultLogger.php';
+require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
+require_once __DIR__ .'/../libs/csrf/csrfpDefaultLogger.php';
 
 if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCase', true)) {
     class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
