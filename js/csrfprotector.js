@@ -49,7 +49,7 @@ var CSRFP = {
 	 * @return {string|Boolean} csrftoken retrieved from cookie
 	 */
 	_getAuthKey: function() {
-		var re = new RegExp(CSRFP.CSRFP_TOKEN +"=([^;]+)(;|$)");
+		var re = new RegExp("(^|;\s*)"+ CSRFP.CSRFP_TOKEN +"=([^;]+)(;|$)");
 		var RegExpArray = re.exec(document.cookie);
 		
 		if (RegExpArray === null) {
