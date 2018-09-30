@@ -26,8 +26,10 @@ This will add CSRFP (library will be downloaded at ./vendor/owasp/csrf-protector
 Configuration
 ==========
 For composer installations: Copy the config.sample.php file into your root folder at config/csrf_config.php
-For non-composer installations: Copy the libs/csrf/config.sample.php file into libs/csrc/config.php
+For non-composer installations: Copy the `libs/csrf/config.sample.php` file into `libs/csrf/config.php`
 Edit config accordingly. See Detailed Information link below.
+
+[Link to wiki - Editing Configurations & Mandatory requirements before using this library](https://github.com/mebjas/CSRF-Protector-PHP/wiki/Configurations)
 
 How to use
 ==========
