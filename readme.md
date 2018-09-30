@@ -61,6 +61,13 @@ Join Discussions on the [mailing list](https://lists.owasp.org/mailman/listinfo/
 
 For any other queries contact me at: **minhaz@owasp.org**
 
+## How to contribute?
+Well, there are various ways to contribute to this project. Find few of them listed below:
+ - Found a bug? Raise a bug in [the issue page](https://github.com/mebjas/CSRF-Protector-PHP/issues?q=is%3Aissue+is%3Aopen+label%3Abug). Please make sure it's not a duplicate of an existing issue.
+ - Have a feature request? Raise one at [the issue page](https://github.com/mebjas/CSRF-Protector-PHP/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement). As mentioned above please do a basic check if this `enhancement` exist in mentioned link.
+ - Want to contribute code to this project?
+   - Best way to start is by picking up one of [the issues with `Up For Grab` label](https://github.com/mebjas/CSRF-Protector-PHP/issues?q=is%3Aissue+is%3Aopen+label%3A%22Up+For+Grabs%22). Leave a comment, that you intend to help on this > fork > send a pull request to `master branch`.
+
 ### FAQ:
 1. What happens if token expires? - https://github.com/mebjas/CSRF-Protector-PHP/wiki/what-if-token-expires
 2. Secure flag in cookie? - https://github.com/mebjas/CSRF-Protector-PHP/issues/54
