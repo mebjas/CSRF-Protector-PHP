@@ -2,13 +2,17 @@
 date_default_timezone_set('UTC');
 require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
+if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCase', true)) {
+    class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
+}
+
 /**
  * Wrapper class for testing purpose
  */
 class csrfp_wrapper extends csrfprotector
 {
     /**
-     * Function to provide wrapper methode to set the protected var, requestType
+     * Function to provide wrapper method to set the protected var, requestType
      */
     public static function changeRequestType($type)
     {
