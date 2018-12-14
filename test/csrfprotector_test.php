@@ -2,6 +2,10 @@
 
 require_once __DIR__ .'/../libs/csrf/csrfprotector.php';
 
+if (intval(phpversion('tidy')) >= 7 && !class_exists('\PHPUnit_Framework_TestCase', true)) {
+    class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
+}
+
 /**
  * Wrapper class for testing purpose
  */
