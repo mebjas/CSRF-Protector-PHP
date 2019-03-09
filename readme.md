@@ -57,7 +57,9 @@ simply include the library and call the `init()` function!
 This version (`master`) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our [nojs version](https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support)
 
 ## Discussion
-Join Discussions on the [mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)
+Join Discussions at [Google Group \ OWASP \ CSRF Protector](https://groups.google.com/a/owasp.org/forum/#!forum/csrfprotector-project)
+
+~~Join Discussions on the [mailing list](https://lists.owasp.org/mailman/listinfo/owasp-csrfprotector)~~
 
 For any other queries contact me at: **minhaz@owasp.org**
 
