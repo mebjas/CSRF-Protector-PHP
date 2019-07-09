@@ -18,7 +18,7 @@ return array(
 	"jsUrl" => "",
 	"tokenLength" => 10,
 	"cookieConfig" => array(
-		"path" => '',
+		"path" => '/',
 		"domain" => '',
 		"secure" => false,
 		"expire" => '',
