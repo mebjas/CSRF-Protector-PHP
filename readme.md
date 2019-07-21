@@ -1,6 +1,6 @@
 CSRF Protector
 ==========================
-[![Todo Status](http://todofy.org/b/mebjas/CSRF-Protector-PHP)](http://todofy.org/r/mebjas/CSRF-Protector-PHP) [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP)  [![codecov](https://codecov.io/gh/mebjas/CSRF-Protector-PHP/branch/master/graph/badge.svg)](https://codecov.io/gh/mebjas/CSRF-Protector-PHP)
+[![Todo Status](http://todofy.org/b/mebjas/CSRF-Protector-PHP)](http://todofy.org/r/mebjas/CSRF-Protector-PHP) [![Build Status](https://travis-ci.org/mebjas/CSRF-Protector-PHP.svg?branch=master)](https://travis-ci.org/mebjas/CSRF-Protector-PHP) (https://codecov.io/gh/mebjas/CSRF-Protector-PHP)
 <br>CSRF protector php, a standalone php library for csrf mitigation in web applications. Easy to integrate in any php web app. 
 
 Add to your project using packagist
