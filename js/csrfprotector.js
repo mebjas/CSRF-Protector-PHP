@@ -356,7 +356,7 @@ function csrfprotector_init() {
 window.addEventListener("DOMContentLoaded", function() {
 	csrfprotector_init();
 
-    // Dispatch an event so clients know the library has initialized
-    var postCsrfProtectorInit = new Event('postCsrfProtectorInit');
-    window.dispatchEvent(postCsrfProtectorInit);
+	// Dispatch an event so clients know the library has initialized
+	var postCsrfProtectorInit = new Event('postCsrfProtectorInit');
+	window.dispatchEvent(postCsrfProtectorInit);
 }, false);
