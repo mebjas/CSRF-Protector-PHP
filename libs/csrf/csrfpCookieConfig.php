@@ -1,14 +1,14 @@
 <?php
 /**
- * This file has implementation for csrfpCookieConfig class
+ * This file has implementation for csrfpCookieConfig class.
  */
 
-if (!defined('__CSRF_PROTECTOR_csrfpCookieConfig__')) {
-    // to avoid multiple declaration errors
-    define('__CSRF_PROTECTOR_csrfpCookieConfig__', true);
+if (!defined('__CSRF_PROTECTOR_COOKIE_CONFIG__')) {
+    // to avoid multiple declaration errors.
+    define('__CSRF_PROTECTOR_COOKIE_CONFIG__', true);
 
     /**
-     * Cookie config class
+     * Cookie configuration class.
      */
     class csrfpCookieConfig
     {

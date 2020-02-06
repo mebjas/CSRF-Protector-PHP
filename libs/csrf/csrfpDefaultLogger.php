@@ -1,21 +1,23 @@
 <?php
 /**
- * This file has implementation for csrfpDefaultLogger class
+ * This file has implementation for csrfpDefaultLogger class.
  */
 include __DIR__ ."/LoggerInterface.php";
 
-if (!defined('__CSRF_PROTECTOR_csrfpDefaultLogger_')) {
+if (!defined('__CSRF_PROTECTOR_DEFAULT_LOGGER_')) {
     // to avoid multiple declaration errors
-    define('__CSRF_PROTECTOR_csrfpDefaultLogger_', true);
+    define('__CSRF_PROTECTOR_DEFAULT_LOGGER_', true);
 
     class logDirectoryNotFoundException extends \exception {};
     class logFileWriteError extends \exception {};
 
     /**
-     * Default logger class for CSRF Protector
-     * This is a file based logger class
+     * Default logger class for CSRF Protector.
+     * 
+     * This is a file based logger class.
      */
     class csrfpDefaultLogger implements LoggerInterface {
+       
         /**
          * Variable: $logDirectory
          * directory for file based logging
@@ -35,12 +37,11 @@ if (!defined('__CSRF_PROTECTOR_csrfpDefaultLogger_')) {
          * logDirectoryNotFoundException - if log directory is not found
          */
         function __construct($path) {
-            //// Check for relative path
+            // Check for relative path
             $this->logDirectory = __DIR__ . "/../" . $path;
             
 
-            //// If the relative log directory path does not
-            //// exist try as an absolute path
+            // If the relative log directory path does not exist try as an absolute path.
             if (!is_dir($this->logDirectory)) {
                 $this->logDirectory = $path;
             }
@@ -67,7 +68,7 @@ if (!defined('__CSRF_PROTECTOR_csrfpDefaultLogger_')) {
             // Append to the log file, or create it if it does not exist create
             $logFile = fopen($this->logDirectory ."/" . date("m-20y") . ".log", "a+");
 
-            //throw exception if above fopen fails
+            // Throw exception if above fopen fails
             if (!$logFile) {
                 throw new logFileWriteError("OWASP CSRFProtector: Unable to write to the log file");    
             }
@@ -75,13 +76,13 @@ if (!defined('__CSRF_PROTECTOR_csrfpDefaultLogger_')) {
             $context['timestamp'] = time();
             $context['message'] = $message;
 
-            //convert log array to JSON format to be logged
+            // Convert log array to JSON format to be logged
             $context = json_encode($context) .PHP_EOL;
 
-            //append log to the file
+            // Append log to the file
             fwrite($logFile, $context);
 
-            //close the file handler
+            // Close the file handler
             fclose($logFile);
         }
     }
