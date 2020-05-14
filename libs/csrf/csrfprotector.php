@@ -11,7 +11,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
     define('__CSRF_PROTECTOR__', true);         // to avoid multiple declaration errors
 
     // name of HTTP POST variable for authentication
-    define("CSRFP_TOKEN","csrfp_token");
+    define("CSRFP_TOKEN","CSRFP-Token");
 
     // We insert token name and list of url patterns for which
     // GET requests are validated against CSRF as hidden input fields

@@ -24,7 +24,7 @@ class csrfp_test_customLogger extends PHPUnit_Framework_TestCase
     protected $config = array();
 
     public function setUp() {
-        csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
+        csrfprotector::$config['CSRFP_TOKEN'] = 'CSRFP-Token';
         csrfprotector::$config['cookieConfig'] = array('secure' => false);
         csrfprotector::$config['logDirectory'] = '../test/logs';
         $_SERVER['REQUEST_URI'] = 'temp';       // For logging
