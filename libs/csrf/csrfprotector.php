@@ -267,10 +267,10 @@ if (!defined('__CSRF_PROTECTOR__')) {
                 return $_POST[self::$config['CSRFP_TOKEN']];
             }
 
-            if (function_exists('apache_request_headers')) {
-                $apacheRequestHeaders = apache_request_headers();
-                if (isset($apacheRequestHeaders[self::$config['CSRFP_TOKEN']])) {
-                    return $apacheRequestHeaders[self::$config['CSRFP_TOKEN']];
+            if (function_exists('getallheaders')) {
+                $requestHeaders = getallheaders();
+                if (isset($requestHeaders[self::$config['CSRFP_TOKEN']])) {
+                    return $requestHeaders[self::$config['CSRFP_TOKEN']];
                 }
             }
 
