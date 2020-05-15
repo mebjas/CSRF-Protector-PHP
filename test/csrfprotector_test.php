@@ -96,7 +96,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
     {
         $this->logDir = __DIR__ .'/logs';
 
-        csrfprotector::$config['CSRFP_TOKEN'] = 'csrfp_token';
+        csrfprotector::$config['CSRFP_TOKEN'] = 'CSRFP-Token';
         csrfprotector::$config['cookieConfig'] = array('secure' => false);
         csrfprotector::$config['logDirectory'] = '../test/logs';
 
@@ -144,7 +144,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         $this->assertTrue(strcmp($val, $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][1]) != 0);
 
         $this->assertTrue(csrfP_wrapper::checkHeader('Set-Cookie'));
-        $this->assertTrue(csrfP_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfP_wrapper::checkHeader('CSRFP-Token'));
         $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][1]));
     }
 
@@ -398,7 +398,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::authorizePost(); //will create new session and cookies
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
-        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('CSRFP-Token'));
         // $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
 
         // For get method
@@ -412,7 +412,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::authorizePost(); //will create new session and cookies
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
-        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('CSRFP-Token'));
         // $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
     }
 
@@ -439,7 +439,7 @@ class csrfp_test extends PHPUnit_Framework_TestCase
         csrfprotector::authorizePost(); //will create new session and cookies
         $this->assertFalse($temp == $_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]);
         $this->assertTrue(csrfp_wrapper::checkHeader('Set-Cookie'));
-        $this->assertTrue(csrfp_wrapper::checkHeader('csrfp_token'));
+        $this->assertTrue(csrfp_wrapper::checkHeader('CSRFP-Token'));
         // $this->assertTrue(csrfp_wrapper::checkHeader($_SESSION[csrfprotector::$config['CSRFP_TOKEN']][0]));  // Combine these 3 later
  
     }
