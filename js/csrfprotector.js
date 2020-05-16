@@ -17,20 +17,19 @@ var CSRFP_FIELD_URLS = 'csrfp_hidden_data_urls';
 var CSRFP = {
 	CSRFP_TOKEN: 'CSRFP-Token',
 	/**
-	 * Array of patterns of url, for which csrftoken need to be added
-	 * In case of GET request also, provided from server
+	 * Array of pattern of urls, for which CSRF token needs to be added for GET
+     * request.
+     * 
+     * This is provided from server
 	 *
 	 * @var {Array}
 	 */
 	checkForUrls: [],
-	/**
-	 * Function to check if a certain url is allowed to perform the request
-	 * With or without csrf token
-	 *
-	 * @param {string} url
-	 *
-	 * @return {Boolean} 	true if csrftoken is not needed
-	 * 						false if csrftoken is needed
+    /**
+	 * Checks if the url doesn't need protection from CSRF.
+     * 
+	 * @param {String} url - URL to check
+	 * @return {Boolean} true if CSRF protection is not needed
 	 */
 	_isValidGetRequest: function(url) {
 		for (var i = 0; i < CSRFP.checkForUrls.length; i++) {
@@ -40,59 +39,60 @@ var CSRFP = {
 			}
 		}
 		return true;
-	},
+    },
 	/**
-	 * Function to get Auth key from cookie and return it to requesting function
+	 * Returns CSRF Auth token.
 	 *
-	 * @param: void
-	 *
-	 * @return {string|Boolean} csrftoken retrieved from cookie
+	 * @return {String} CSRF Token from cookie.
 	 */
 	_getAuthKey: function() {
-		var re = new RegExp(CSRFP.CSRFP_TOKEN +"=([^;]+)(;|$)");
-		var RegExpArray = re.exec(document.cookie);
-		
-		if (RegExpArray === null) {
-			return false;
-		}
-		return RegExpArray[1];
+        var pattern = "([^;]+)(;|$)";
+		var regex = new RegExp(`${CSRFP.CSRFP_TOKEN}=${pattern}`);
+		var regexResult = regex.exec(document.cookie);
+		if (!regexResult) {
+			return null;
+        }
+
+		return regexResult[1];
 	},
 	/** 
-	 * Function to get domain of any url
+	 * Returns domain name from url
 	 *
-	 * @param {string} url
-	 *
-	 * @return {string} domain of url
+	 * @param {String} url - any url
+	 * @return {String} domain name of url
 	 */
 	_getDomain: function(url) {
-		if (url.indexOf("http://") !== 0 
-			&& url.indexOf("https://") !== 0)
-			return document.domain;
+		if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+            var urlParts = url.split("/");
+            if (urlParts && urlParts.length > 0) {
+                return urlParts[0];
+            }
+
+            return null;
+        }
+
 		return /http(s)?:\/\/([^\/]+)/.exec(url)[2];
 	},
 	/**
-	 * Function to create and return a hidden input element
-	 * For storing the CSRFP_TOKEN
-	 *
-	 * @param: void
+	 * Create and return hidden input element with CSRF token.
 	 *
 	 * @return {HTMLInputElement} input element
 	 */
-	_getInputElt: function() {
-		var hiddenObj = document.createElement("input");
-		hiddenObj.setAttribute('name', CSRFP.CSRFP_TOKEN);
-		hiddenObj.setAttribute('class', CSRFP.CSRFP_TOKEN);
-		hiddenObj.type = 'hidden';
-		hiddenObj.value = CSRFP._getAuthKey();
-		return hiddenObj;
+	_createInputElement: function() {
+		var htmlElement = document.createElement("input");
+		htmlElement.setAttribute('name', CSRFP.CSRFP_TOKEN);
+		htmlElement.setAttribute('class', CSRFP.CSRFP_TOKEN);
+		htmlElement.type = 'hidden';
+		htmlElement.value = CSRFP._getAuthKey();
+		return htmlElement;
 	},
 	/**
-	 * Returns absolute path for relative path
+	 * Returns absolute path from base and relative path of url.
 	 *
-	 * @param {string} base base url
-	 * @param {string} relative relative url
+	 * @param {String} base base url
+	 * @param {String} relative relative url
 	 *
-	 * @return {string} absolute path
+	 * @return {String} absolute path
 	 */
 	_getAbsolutePath: function(base, relative) {
 		var stack = base.split("/");
@@ -102,24 +102,28 @@ var CSRFP = {
 		stack.pop(); 
 			 
 		for (var i = 0; i < parts.length; i++) {
-			if (parts[i] === ".")
+			if (parts[i] === ".") {
 				continue;
-			if (parts[i] === "..")
+            }
+
+			if (parts[i] === "..") {
 				stack.pop();
-			else
+            } else {
 				stack.push(parts[i]);
-		}
+            }
+        }
+
 		return stack.join("/");
 	},
 	/**
 	 * Remove jcsrfp-token run fun and then put them back
 	 *
-	 * @param {function} fun
-	 * @param {object} obj reference form obj
+	 * @param {Function} originalFunction - function to wrap
+	 * @param {Object} obj reference form obj
 	 *
-	 * @return function
+	 * @return wrapped function
 	 */
-	_csrfpWrap: function(fun, obj) {
+	_csrfpWrap: function(originalFunction, obj) {
 		return function(event) {
 			// Remove CSRf token if exists
 			if (typeof obj[CSRFP.CSRFP_TOKEN] !== 'undefined') {
@@ -128,10 +132,10 @@ var CSRFP = {
 			}
 			
 			// Trigger the functions
-			var result = fun.apply(this, [event]);
+			var result = originalFunction.apply(this, [event]);
 			
 			// Now append the CSRFP-Token back
-			obj.appendChild(CSRFP._getInputElt());
+			obj.appendChild(CSRFP._createInputElement());
 			
 			return result;
 		};
@@ -176,7 +180,7 @@ function csrfprotector_init() {
 	// and attach a CSRFP TOKEN if it's not already available
 	var BasicSubmitInterceptor = function(event) {
 		if (typeof event.target[CSRFP.CSRFP_TOKEN] === 'undefined') {
-			event.target.appendChild(CSRFP._getInputElt());
+			event.target.appendChild(CSRFP._createInputElement());
 		} else {
 			//modify token to latest value
 			event.target[CSRFP.CSRFP_TOKEN].value = CSRFP._getAuthKey();
@@ -209,7 +213,7 @@ function csrfprotector_init() {
 	HTMLFormElement.prototype.submit = function() {
 		// check if the FORM already contains the token element
 		if (!this.getElementsByClassName(CSRFP.CSRFP_TOKEN).length)
-			this.appendChild(CSRFP._getInputElt());
+			this.appendChild(CSRFP._createInputElement());
 		this.submit_();
 	};
 
