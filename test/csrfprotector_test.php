@@ -15,7 +15,7 @@ if (intval(phpversion('tidy')) >= 7
 /**
  * main test class
  */
-class csrfp_test extends TestCase {
+class csrfp_test extends PHPUnit_Framework_TestCase {
     /**
      * @var array to hold current configurations
      */
