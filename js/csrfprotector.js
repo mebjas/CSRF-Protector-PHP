@@ -222,7 +222,7 @@ function csrfprotector_init() {
 	 */
 	if (HTMLFormElement.prototype.attachEvent) {
         HTMLFormElement.prototype.attachEvent_real
-            = HTMLFormElement.prototype.attachEvent;
+			= HTMLFormElement.prototype.attachEvent;
 		HTMLFormElement.prototype.attachEvent = function(eventType, func) {
 			if (eventType === 'onsubmit') {
 				var wrappedFunc = CSRFP._createCsrfpWrappedFunction(func, this);
@@ -248,17 +248,17 @@ function csrfprotector_init() {
 		this.method = method;
 		var isAbsolute = url.indexOf("./") === -1;
 		if (!isAbsolute) {
-            var base = location.protocol + '//' + location.host 
-                + location.pathname;
+			var base = location.protocol + '//' + location.host 
+				+ location.pathname;
 			url = CSRFP._createAbsolutePath(base, url);
-        }
-        
+		}
+
 		if (method.toLowerCase() === 'get' && !CSRFP._isValidGetRequest(url)) {
-            var token = CSRFP._getAuthKey();
+			var token = CSRFP._getAuthKey();
 			if (url.indexOf('?') === -1) {
-                url += `?${CSRFP.CSRFP_TOKEN}=${token}`
+				url += `?${CSRFP.CSRFP_TOKEN}=${token}`
 			} else {
-                url += `&${CSRFP.CSRFP_TOKEN}=${token}`;
+				url += `&${CSRFP.CSRFP_TOKEN}=${token}`;
 			}
 		}
 
@@ -306,35 +306,36 @@ function csrfprotector_init() {
 	for (var i = 0; i < document.links.length; i++) {
 		document.links[i].addEventListener("mousedown", function(event) {
 			var href = event.target.href;
-			if(typeof href === "string") {
-				var urlParts = href.split('#');
-				var url = urlParts[0];
-				var hash = urlParts[1];
+			if(typeof href !== "string") {
+				continue;
+			}
+			var urlParts = href.split('#');
+			var url = urlParts[0];
+			var hash = urlParts[1];
 
-				if(CSRFP._getDomain(url).indexOf(document.domain) === -1
-					|| CSRFP._isValidGetRequest(url)) {
-					//cross origin or not to be protected by rules -- ignore
-					return;
-				}
+			if(CSRFP._getDomain(url).indexOf(document.domain) === -1
+				|| CSRFP._isValidGetRequest(url)) {
+				//cross origin or not to be protected by rules -- ignore
+				return;
+			}
 
-                var token = CSRFP._getAuthKey();
-				if (url.indexOf('?') !== -1) {
-					if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
-						url += `&${CSRFP.CSRFP_TOKEN}=${token}`;
-					} else {
-                        var replacementString = `${CSRFP.CSRFP_TOKEN}=${token}$1`;
-						url = url.replace(
-                            new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
-                            replacementString);
-					}
+			var token = CSRFP._getAuthKey();
+			if (url.indexOf('?') !== -1) {
+				if(url.indexOf(CSRFP.CSRFP_TOKEN) === -1) {
+					url += `&${CSRFP.CSRFP_TOKEN}=${token}`;
 				} else {
-                    url += `?${CSRFP.CSRFP_TOKEN}=${token}`;
-				}
+					var replacementString = `${CSRFP.CSRFP_TOKEN}=${token}$1`;
+					url = url.replace(
+						new RegExp(CSRFP.CSRFP_TOKEN +"=.*?(&|$)", 'g'),
+						replacementString);
+					}
+			} else {
+				url += `?${CSRFP.CSRFP_TOKEN}=${token}`;
+			}
 
-				event.target.href = url;
-				if (hash) {
-					event.target.href += `#${hash}`;
-				}
+			event.target.href = url;
+			if (hash) {
+				event.target.href += `#${hash}`;
 			}
 		});
 	}
