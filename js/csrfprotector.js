@@ -161,8 +161,8 @@ function csrfprotector_init() {
 	// Call the init function
 	CSRFP._init();
 
-    // Basic FORM submit event handler to intercept the form request and attach
-    // a CSRFP TOKEN if it's not already available.
+	// Basic FORM submit event handler to intercept the form request and attach
+	// a CSRFP TOKEN if it's not already available.
 	var basicSubmitInterceptor = function(event) {
 		if (!event.target[CSRFP.CSRFP_TOKEN]) {
 			event.target.appendChild(CSRFP._createHiddenInputElement());
