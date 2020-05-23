@@ -8,51 +8,16 @@ if (!defined('__CSRF_PROTECTOR_DEFAULT_LOGGER_')) {
     // to avoid multiple declaration errors
     define('__CSRF_PROTECTOR_DEFAULT_LOGGER_', true);
 
-    class logDirectoryNotFoundException extends \exception {};
-    class logFileWriteError extends \exception {};
-
     /**
      * Default logger class for CSRF Protector.
      * 
-     * This is a file based logger class.
+     * This implementation is based on PHP's default error_log implementation.
      */
     class csrfpDefaultLogger implements LoggerInterface {
-       
         /**
-         * Variable: $logDirectory
-         * directory for file based logging
-         */
-        private $logDirectory;
-
-        /**
-         * Constructor
+         * Sends error message to the defined error_handling routines.
          * 
-         * Parameters:
-         * $path - the path for logs to be stored (relative or absolute)
-         * 
-         * Returns:
-         * void
-         *
-         * Throws:
-         * logDirectoryNotFoundException - if log directory is not found
-         */
-        function __construct($path) {
-            // Check for relative path
-            $this->logDirectory = __DIR__ . "/../" . $path;
-            
-
-            // If the relative log directory path does not exist try as an absolute path.
-            if (!is_dir($this->logDirectory)) {
-                $this->logDirectory = $path;
-            }
-
-            if (!is_dir($this->logDirectory)) {
-                throw new logDirectoryNotFoundException("OWASP CSRFProtector: Log Directory Not Found!");
-            }
-        }
-
-        /**
-         * logging method
+         * Based on PHP's default error_log method implementation.
          *
          * Parameters:
          * $message - the log message
@@ -60,30 +25,16 @@ if (!defined('__CSRF_PROTECTOR_DEFAULT_LOGGER_')) {
          * 
          * Return:
          * void
-         *
-         * Throws:
-         * logFileWriteError - if unable to log an attack
          */
         public function log($message, $context = array()) {
-            // Append to the log file, or create it if it does not exist create
-            $logFile = fopen($this->logDirectory ."/" . date("m-20y") . ".log", "a+");
-
-            // Throw exception if above fopen fails
-            if (!$logFile) {
-                throw new logFileWriteError("OWASP CSRFProtector: Unable to write to the log file");    
-            }
-
             $context['timestamp'] = time();
             $context['message'] = $message;
 
             // Convert log array to JSON format to be logged
-            $context = json_encode($context) .PHP_EOL;
-
-            // Append log to the file
-            fwrite($logFile, $context);
-
-            // Close the file handler
-            fclose($logFile);
+            $contextString = "OWASP CSRF Protector PHP " 
+                .json_encode($context) 
+                .PHP_EOL;
+            error_log($contextString, /* message_type= */ 0);
         }
     }
 }

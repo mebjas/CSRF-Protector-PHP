@@ -10,7 +10,7 @@ include __DIR__ ."/csrfpAction.php";            // Actions enumerator
 if (!defined('__CSRF_PROTECTOR__')) {
     define('__CSRF_PROTECTOR__', true);         // to avoid multiple declaration errors
 
-    // name of HTTP POST variable for authentication
+    // Name of HTTP POST variable for authentication
     define("CSRFP_TOKEN","CSRFP-Token");
 
     // We insert token name and list of url patterns for which
@@ -19,13 +19,13 @@ if (!defined('__CSRF_PROTECTOR__')) {
     define("CSRFP_FIELD_TOKEN_NAME", "csrfp_hidden_data_token");
     define("CSRFP_FIELD_URLS", "csrfp_hidden_data_urls");
 
-    /**
-     * child exception classes
-     */
+    /** Indicates configuration file was not found. */
     class configFileNotFoundException extends \exception {};
-    class jsFileNotFoundException extends \exception {};
-    class baseJSFileNotFoundExceptio extends \exception {};
+
+    /** Indicates that configuration file is incomplete. */
     class incompleteConfigurationException extends \exception {};
+
+    /** Indicates that CSRF Protector is already initialized. */
     class alreadyInitializedException extends \exception {};
 
     class csrfProtector
@@ -76,13 +76,17 @@ if (!defined('__CSRF_PROTECTOR__')) {
          * Variable: $config
          * config file for CSRFProtector
          * @var int Array, length = 6
-         * Property: #1: failedAuthAction (int) => action to be taken in case autherisation fails
-         * Property: #2: logDirectory (string) => directory in which log will be saved
-         * Property: #3: customErrorMessage (string) => custom error message to be sent in case
-         *                        of failed authentication
-         * Property: #4: jsFile (string) => location of the CSRFProtector js file
-         * Property: #5: tokenLength (int) => default length of hash
-         * Property: #6: disabledJavascriptMessage (string) => error message if client's js is disabled
+         * Property: #1: failedAuthAction (int) => action to be taken in case 
+         * autherisation fails.
+         * Property: #3: customErrorMessage (string) => custom error message to
+         * be sent in case of failed authentication.
+         * Property: #4: jsFile (string) => location of the CSRFProtector js
+         * file.
+         * Property: #5: tokenLength (int) => default length of hash.
+         * Property: #6: disabledJavascriptMessage (string) => error message if
+         * client's js is disabled.
+         * 
+         * TODO(mebjas): this field should be private
          */
         public static $config = array();
 
@@ -90,16 +94,20 @@ if (!defined('__CSRF_PROTECTOR__')) {
          * Variable: $requiredConfigurations
          * Contains list of those parameters that are required to be there
          *     in config file for csrfp to work
+         * 
+         * TODO(mebjas): this field should be private
          */
-        public static $requiredConfigurations  = array('logDirectory', 'failedAuthAction', 'jsUrl', 'tokenLength');
+        public static $requiredConfigurations  = array(
+            'failedAuthAction', 'jsUrl', 'tokenLength');
         
         /*
          * Function: function to initialise the csrfProtector work flow
          *
          * Parameters:
-         * $length - length of CSRF_AUTH_TOKEN to be generated
-         * $action - int array, for different actions to be taken in case of failed validation
-         * $logger - custom logger class object
+         * $length - (int) length of CSRF_AUTH_TOKEN to be generated.
+         * $action - (int array), for different actions to be taken in case of
+         *      failed validation.
+         * $logger - (LoggerInterface) custom logger class object.
          *
          * Returns:
          * void
@@ -179,11 +187,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
                     implode(', ', $missingConfiguration) . ' value(s)');
             }
             
-            // Iniialize the logger class
+            // Initialize the logger class
             if ($logger !== null) {
                 self::$logger = $logger;
             } else {
-                self::$logger = new csrfpDefaultLogger(self::$config['logDirectory']);
+                self::$logger = new csrfpDefaultLogger();
             }
 
             // Authorise the incoming request
@@ -212,9 +220,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
          *
          * Returns: 
          * void
-         *
-         * Throws: 
-         * logDirectoryNotFoundException - if log directory is not found
+         * 
+         * TODO(mebjas): this method should be private.
          */
         public static function authorizePost()
         {
@@ -539,7 +546,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
             $context['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
             $context['requestType'] = self::$requestType;
             $context['cookie'] = $_COOKIE;
-            self::$logger->log("OWASP CSRF PROTECTOR VALIDATION FAILURE", $context);
+            self::$logger->log(
+                "OWASP CSRF PROTECTOR VALIDATION FAILURE", $context);
         }
 
         /*
