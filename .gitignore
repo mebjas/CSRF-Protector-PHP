@@ -5,3 +5,5 @@ coverage/
 vendor/
 build/
 log/*.log
+
+.DS_Store
