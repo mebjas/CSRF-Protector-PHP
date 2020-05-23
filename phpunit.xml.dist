@@ -5,7 +5,7 @@
         <ini name="error_reporting" value="E_ALL"/>
     </php>
     <testsuite name="OWASP CSRF Protector php">
-        <directory>./test/csrfprotector_test.php</directory>
+        <!-- <directory>./test/csrfprotector_test.php</directory> -->
         <directory>./test/csrfprotector_test_customlogger.php</directory>
     </testsuite>
     <filter>

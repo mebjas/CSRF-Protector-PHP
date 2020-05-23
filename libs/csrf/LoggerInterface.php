@@ -1,6 +1,6 @@
 <?php
 /**
- * This file has implementation for LoggerInterface interface
+ * CSRF Protector's Logger interface.
  */
 
 if (!defined('__CSRF_PROTECTOR_LOGGER_INTERFACE__')) {

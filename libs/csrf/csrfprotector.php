@@ -24,7 +24,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
      */
     class configFileNotFoundException extends \exception {};
     class jsFileNotFoundException extends \exception {};
-    class baseJSFileNotFoundExceptio extends \exception {};
     class incompleteConfigurationException extends \exception {};
     class alreadyInitializedException extends \exception {};
 
@@ -77,7 +76,6 @@ if (!defined('__CSRF_PROTECTOR__')) {
          * config file for CSRFProtector
          * @var int Array, length = 6
          * Property: #1: failedAuthAction (int) => action to be taken in case autherisation fails
-         * Property: #2: logDirectory (string) => directory in which log will be saved
          * Property: #3: customErrorMessage (string) => custom error message to be sent in case
          *                        of failed authentication
          * Property: #4: jsFile (string) => location of the CSRFProtector js file
@@ -91,7 +89,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
          * Contains list of those parameters that are required to be there
          *     in config file for csrfp to work
          */
-        public static $requiredConfigurations  = array('logDirectory', 'failedAuthAction', 'jsUrl', 'tokenLength');
+        public static $requiredConfigurations  = array('failedAuthAction', 'jsUrl', 'tokenLength');
         
         /*
          * Function: function to initialise the csrfProtector work flow
@@ -179,11 +177,11 @@ if (!defined('__CSRF_PROTECTOR__')) {
                     implode(', ', $missingConfiguration) . ' value(s)');
             }
             
-            // Iniialize the logger class
+            // Initialize the logger class
             if ($logger !== null) {
                 self::$logger = $logger;
             } else {
-                self::$logger = new csrfpDefaultLogger(self::$config['logDirectory']);
+                self::$logger = new csrfpDefaultLogger();
             }
 
             // Authorise the incoming request
@@ -216,7 +214,7 @@ if (!defined('__CSRF_PROTECTOR__')) {
          * Throws: 
          * logDirectoryNotFoundException - if log directory is not found
          */
-        public static function authorizePost()
+        private static function authorizePost()
         {
             // TODO(mebjas): this method is valid for same origin request only, 
             // enable it for cross origin also sometime for cross origin the
@@ -539,7 +537,8 @@ if (!defined('__CSRF_PROTECTOR__')) {
             $context['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
             $context['requestType'] = self::$requestType;
             $context['cookie'] = $_COOKIE;
-            self::$logger->log("OWASP CSRF PROTECTOR VALIDATION FAILURE", $context);
+            self::$logger->log(
+                "OWASP CSRF PROTECTOR VALIDATION FAILURE", $context);
         }
 
         /*
