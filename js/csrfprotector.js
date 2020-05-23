@@ -48,7 +48,7 @@ var CSRFP = {
 		var regexResult = regex.exec(document.cookie);
 		if (regexResult === null) {
 			return null;
-        }
+		}
 
 		return regexResult[1];
 	},
@@ -89,16 +89,16 @@ var CSRFP = {
 		var stack = basePart.split("/");
 		var parts = relativePart.split("/");
 		stack.pop(); 
-			 
+
 		for (var i = 0; i < parts.length; i++) {
 			if (parts[i] === ".") {
 				continue;
-            }
+			}
 			if (parts[i] === "..") {
 				stack.pop();
-            } else {
+			} else {
 				stack.push(parts[i]);
-            }
+			}
 		}
 		return stack.join("/");
 	},
@@ -117,13 +117,12 @@ var CSRFP = {
 				var target = htmlFormObject[CSRFP.CSRFP_TOKEN];
 				target.parentNode.removeChild(target);
 			}
-			
+
 			// Trigger the functions
 			var result = runnableFunction.apply(this, [event]);
-			
+
 			// Now append the CSRFP-Token back
 			htmlFormObject.appendChild(CSRFP._createHiddenInputElement());
-			
 			return result;
 		};
 	},
@@ -195,7 +194,7 @@ function csrfprotector_init() {
 		// check if the FORM already contains the token element
 		if (!this.getElementsByClassName(CSRFP.CSRFP_TOKEN).length) {
 			this.appendChild(CSRFP._createHiddenInputElement());
-        }
+		}
 		this.submit_real();
 	};
 
@@ -205,9 +204,9 @@ function csrfprotector_init() {
 	 * todo - check for method
 	 */
     HTMLFormElement.prototype.addEventListener_real
-        = HTMLFormElement.prototype.addEventListener;
+		= HTMLFormElement.prototype.addEventListener;
 	HTMLFormElement.prototype.addEventListener = function(
-        eventType, func, bubble) {
+		eventType, func, bubble) {
 		if (eventType === 'submit') {
 			var wrappedFunc = CSRFP._createCsrfpWrappedFunction(func, this);
 			this.addEventListener_real(eventType, wrappedFunc, bubble);
