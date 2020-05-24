@@ -307,7 +307,7 @@ function csrfprotector_init() {
 		document.links[i].addEventListener("mousedown", function (event) {
 			var href = event.target.href;
 			if (typeof href !== "string") {
-				continue;
+				return;
 			}
 			var urlParts = href.split('#');
 			var url = urlParts[0];
