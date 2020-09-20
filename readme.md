@@ -68,9 +68,4 @@ Well, there are various ways to contribute to this project. Find a few of them l
 ## FAQ:
 1. What happens if token expires? - https://github.com/mebjas/CSRF-Protector-PHP/wiki/what-if-token-expires
 2. Secure flag in a cookie? - https://github.com/mebjas/CSRF-Protector-PHP/issues/54
-3. NoJS support? - https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support
-
-## Appendix
-
-### JS not supported?
-This version (in `master` branch) requires the clients to have Javascript enabled. However if your application can work without javascript & you require a nojs version of this library, check our nojs version
+3. \[Deprecated\] ~NoJS support? - https://github.com/mebjas/CSRF-Protector-PHP/tree/nojs-support~
