@@ -232,6 +232,16 @@ function csrfprotector_init() {
 			}
 		}
 	}
+	
+	//reassign every form functions 
+	for (let form of document.forms){
+		form.submit = HTMLFormElement.prototype.submit
+		form.submit_real = HTMLFormElement.prototype.submit_real
+		form.attachEvent = HTMLFormElement.prototype.attachEvent
+		form.attachEvent_real = HTMLFormElement.prototype.attachEvent_real
+		form.addEventListener = HTMLFormElement.prototype.addEventListener
+		form.addEventListener_real = HTMLFormElement.prototype.addEventListener_real
+	}
 
 	//==================================================================
 	// Wrapper for XMLHttpRequest & ActiveXObject (for IE 6 & below)
