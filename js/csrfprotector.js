@@ -305,7 +305,7 @@ function csrfprotector_init() {
 
 	for (var i = 0; i < document.links.length; i++) {
 		document.links[i].addEventListener("mousedown", function (event) {
-			var href = event.target.href;
+			var href = event.currentTarget.href;
 			if (typeof href !== "string") {
 				return;
 			}
@@ -333,9 +333,9 @@ function csrfprotector_init() {
 				url += `?${CSRFP.CSRFP_TOKEN}=${token}`;
 			}
 
-			event.target.href = url;
+			event.currentTarget.href = url;
 			if (hash) {
-				event.target.href += `#${hash}`;
+				event.currentTarget.href += `#${hash}`;
 			}
 		});
 	}
