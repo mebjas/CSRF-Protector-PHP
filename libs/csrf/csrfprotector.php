@@ -444,24 +444,16 @@ if (!defined('__CSRF_PROTECTOR__')) {
                 self::$config['tokenLength'] = 32;    //set as default
             }
 
-            // TODO(mebjas): if $length > 128 throw exception 
+            if (self::$config['tokenLength'] > 128) {
+                throw new InvalidArgumentException("Token length cannot exceed 128 characters.");
+            }
 
             if (function_exists("random_bytes")) {
                 $token = bin2hex(random_bytes($randLength));
             } elseif (function_exists("openssl_random_pseudo_bytes")) {
                 $token = bin2hex(openssl_random_pseudo_bytes($randLength));
-            } else {
-                $token = '';
-                for ($i = 0; $i < 128; ++$i) {
-                    $r = mt_rand (0, 35);
-                    if ($r < 26) {
-                        $c = chr(ord('a') + $r);
-                    } else { 
-                        $c = chr(ord('0') + $r - 26);
-                    }
-                    $token .= $c;
-                }
             }
+        
             return substr($token, 0, self::$config['tokenLength']);
         }
 
